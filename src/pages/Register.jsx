@@ -40,7 +40,7 @@ function Register() {
         posterJobTitle: formData.role === 'employer' ? formData.posterJobTitle : ''
       };
 
-      await axios.post('http://localhost:5000/api/auth/register', payload);
+      await axios.post('https://talexajobs.onrender.com/api/auth/register', payload);
       
       toast.dismiss(loadingToast);
       toast.success("Account created! Please check your email.");

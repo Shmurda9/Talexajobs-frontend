@@ -21,14 +21,14 @@ function TermsOfService() {
             <section>
               <h2 className="text-xl font-extrabold text-slate-900 mb-3">1. Acceptance of Terms</h2>
               <p>
-                By accessing and using Talexajobs (the "Platform"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services. Talexajobs reserves the right to update or modify these terms at any time without prior notice.
+                By accessing and using TalexaJobs (the "Platform"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services. TalexaJobs reserves the right to update or modify these terms at any time without prior notice.
               </p>
             </section>
 
             <section>
               <h2 className="text-xl font-extrabold text-slate-900 mb-3">2. User Accounts & Responsibilities</h2>
-              <p className="mb-2"><strong>For Job Seekers:</strong> You agree to provide accurate, current, and complete information regarding your professional experience, education, and qualifications. Talexajobs is not responsible for the outcome of any job application.</p>
-              <p><strong>For Employers:</strong> You are strictly prohibited from posting fraudulent, discriminatory, or misleading job opportunities. All job postings are subject to review and approval by Talexajobs Administration. We reserve the right to remove any posting or ban any employer violating these terms.</p>
+              <p className="mb-2"><strong>For Job Seekers:</strong> You agree to provide accurate, current, and complete information regarding your professional experience, education, and qualifications. TalexaJobs is not responsible for the outcome of any job application.</p>
+              <p><strong>For Employers:</strong> You are strictly prohibited from posting fraudulent, discriminatory, or misleading job opportunities. All job postings are subject to review and approval by TalexaJobs Administration. We reserve the right to remove any posting or ban any employer violating these terms.</p>
             </section>
 
             <section>
@@ -43,7 +43,7 @@ function TermsOfService() {
             <section>
               <h2 className="text-xl font-extrabold text-slate-900 mb-3">4. Limitation of Liability</h2>
               <p>
-                Talexajobs acts solely as a venue for employers to post job opportunities and candidates to post resumes. We are not involved in the actual transaction between employers and candidates. Talexajobs shall not be liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use the Platform.
+                TalexaJobs acts solely as a venue for employers to post job opportunities and candidates to post resumes. We are not involved in the actual transaction between employers and candidates. TalexaJobs shall not be liable for any direct, indirect, incidental, or consequential damages resulting from the use or inability to use the Platform.
               </p>
             </section>
 
@@ -56,7 +56,7 @@ function TermsOfService() {
 
             <div className="pt-8 border-t border-slate-100 mt-8 text-center">
               <p className="text-slate-500 font-medium mb-4">Questions about these Terms?</p>
-              <a href="mailto:support@Talexajobs.com" className="inline-block bg-blue-50 text-blue-700 font-bold px-6 py-3 rounded-xl border border-blue-100 hover:bg-blue-100 transition">
+              <a href="mailto:support@TalexaJobs.com" className="inline-block bg-blue-50 text-blue-700 font-bold px-6 py-3 rounded-xl border border-blue-100 hover:bg-blue-100 transition">
                 Contact Support
               </a>
             </div>

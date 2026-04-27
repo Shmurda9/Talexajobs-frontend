@@ -165,7 +165,7 @@ function ProfileSetup() {
         if (employerFile) formData.append("companyLogo", employerFile);
       }
 
-      const response = await axios.put("http://localhost:5000/api/users/profile", formData, {
+      const response = await axios.put("https://talexajobs.onrender.com/api/users/profile", formData, {
         headers: { Authorization: "Bearer " + token }
       });
 

@@ -20,7 +20,7 @@ function GlobalChatListener() {
     if (!myId) return;
 
     // Connect the global radar
-    const socket = io("http://localhost:5000", {
+    const socket = io("https://talexajobs.onrender.com", {
       transports: ['websocket', 'polling']
     });
 

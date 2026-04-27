@@ -68,7 +68,7 @@ function PostJob() {
         applicationLink: formData.applicationLink 
       };
 
-      await axios.post("http://localhost:5000/api/jobs/post", payload, {
+      await axios.post("https://talexajobs.onrender.com/api/jobs/post", payload, {
         headers: {
           token: token,
           Authorization: "Bearer " + token
@@ -111,7 +111,7 @@ function PostJob() {
                 </div>
                 <h2 className="text-3xl md:text-4xl font-black text-white tracking-tight mb-2">Create a Job Posting</h2>
                 <p className="text-blue-200 font-medium text-sm md:text-base max-w-lg">
-                  Fill out the details below to attract top-tier talent on Talexajobs.
+                  Fill out the details below to attract top-tier talent on TalexaJobs.
                 </p>
              </div>
           </div>

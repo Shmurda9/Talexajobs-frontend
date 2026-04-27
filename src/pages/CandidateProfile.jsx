@@ -20,7 +20,7 @@ function CandidateProfile() {
 
     const fetchProfile = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/users/" + id, {
+        const response = await axios.get("https://talexajobs.onrender.com/api/users/" + id, {
           headers: { token: token, Authorization: "Bearer " + token }
         });
         
@@ -49,7 +49,7 @@ function CandidateProfile() {
 
     const loadingToast = toast.loading("Sending message...");
     try {
-      await axios.post('http://localhost:5000/api/messages/send', 
+      await axios.post('https://talexajobs.onrender.com/api/messages/send', 
         { receiverId: candidate._id, text: initialText }, 
         { headers: { token: token, Authorization: "Bearer " + token } }
       );
@@ -66,8 +66,8 @@ function CandidateProfile() {
     if (candidate && candidate.profilePictureUrl) {
       const cleanPath = candidate.profilePictureUrl.replace(/\\/g, '/');
       if (cleanPath.startsWith('http')) return cleanPath;
-      if (cleanPath.startsWith('/')) return "http://localhost:5000" + cleanPath;
-      return "http://localhost:5000/" + cleanPath;
+      if (cleanPath.startsWith('/')) return "https://talexajobs.onrender.com" + cleanPath;
+      return "https://talexajobs.onrender.com/" + cleanPath;
     }
     return null;
   };
@@ -85,8 +85,8 @@ function CandidateProfile() {
       return cleanPath.substring(cleanPath.indexOf('http'));
     }
     
-    if (cleanPath.startsWith('/')) return "http://localhost:5000" + cleanPath;
-    return "http://localhost:5000/" + cleanPath;
+    if (cleanPath.startsWith('/')) return "https://talexajobs.onrender.com" + cleanPath;
+    return "https://talexajobs.onrender.com/" + cleanPath;
   };
 
   if (loading) {

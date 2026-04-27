@@ -53,7 +53,7 @@ function Navbar() {
       }
 
       try {
-        const res = await axios.get('http://localhost:5000/api/messages/inbox', {
+        const res = await axios.get('https://talexajobs.onrender.com/api/messages/inbox', {
           headers: { Authorization: "Bearer " + token, token: token }
         });
         if (res.data.success) {
@@ -88,7 +88,7 @@ function Navbar() {
         if (!myId) myId = decoded.userId;
         
         if (myId) {
-          const newSocket = io("http://localhost:5000", { transports: ['websocket', 'polling'] });
+          const newSocket = io("https://talexajobs.onrender.com", { transports: ['websocket', 'polling'] });
           setSocket(newSocket);
           newSocket.emit("addUser", myId);
 
@@ -183,7 +183,7 @@ function Navbar() {
         return userData.profilePictureUrl;
       }
       const cleanPath = userData.profilePictureUrl.split('\\').join('/');
-      return "http://localhost:5000/" + cleanPath;
+      return "https://talexajobs.onrender.com/" + cleanPath;
     }
     return null;
   };
@@ -251,7 +251,7 @@ function Navbar() {
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
               <span className="font-black text-lg sm:text-2xl tracking-wide text-white truncate">
-                Talexajobs
+                TalexaJobs
               </span>
             </Link>
             

@@ -35,7 +35,7 @@ function VerifyEmail() {
 
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/auth/verify-email', {
+      await axios.post('https://talexajobs.onrender.com/api/auth/verify-email', {
         email: userEmail,
         code: code
       });
@@ -58,7 +58,7 @@ function VerifyEmail() {
     }
     setResendLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/auth/resend-verification', { email: userEmail });
+      await axios.post('https://talexajobs.onrender.com/api/auth/resend-verification', { email: userEmail });
       alert("A fresh 6-digit code has been sent to your email!");
     } catch (error) {
       alert("Failed to resend code. Please try again.");

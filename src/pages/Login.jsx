@@ -24,7 +24,7 @@ function Login() {
     localStorage.removeItem("user");
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/login", formData);
+      const response = await axios.post("https://talexajobs.onrender.com/api/auth/login", formData);
       
       toast.dismiss(loadingToast);
 

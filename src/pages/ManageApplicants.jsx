@@ -18,7 +18,7 @@ function ManageApplicants() {
 
     const fetchApplications = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/api/applications/employer', {
+        const response = await axios.get('https://talexajobs.onrender.com/api/applications/employer', {
           headers: { token: token, Authorization: "Bearer " + token }
         });
         
@@ -39,7 +39,7 @@ function ManageApplicants() {
 
   const handleUpdateStatus = async (appId, newStatus) => {
     try {
-      await axios.put('http://localhost:5000/api/applications/status/' + appId, 
+      await axios.put('https://talexajobs.onrender.com/api/applications/status/' + appId, 
         { status: newStatus.toLowerCase() },
         { headers: { token: token, Authorization: "Bearer " + token } }
       );
@@ -61,7 +61,7 @@ function ManageApplicants() {
     if (!window.confirm("Remove this candidate permanently? This cannot be undone.")) return;
     const loadingToast = toast.loading("Removing candidate...");
     try {
-      await axios.delete('http://localhost:5000/api/applications/delete/' + appId, {
+      await axios.delete('https://talexajobs.onrender.com/api/applications/delete/' + appId, {
         headers: { token: token, Authorization: "Bearer " + token }
       });
       toast.dismiss(loadingToast);
@@ -102,7 +102,7 @@ function ManageApplicants() {
 
     const loadingToast = toast.loading("Sending message...");
     try {
-      await axios.post('http://localhost:5000/api/messages/send', 
+      await axios.post('https://talexajobs.onrender.com/api/messages/send', 
         { receiverId: candId, text: initialText }, 
         { headers: { token: token, Authorization: "Bearer " + token } }
       );
@@ -123,8 +123,8 @@ function ManageApplicants() {
 
     const cleanPath = rawUrl.replace(/\\/g, '/');
     if (cleanPath.startsWith('http')) return cleanPath;
-    if (cleanPath.startsWith('/')) return "http://localhost:5000" + cleanPath;
-    return "http://localhost:5000/" + cleanPath;
+    if (cleanPath.startsWith('/')) return "https://talexajobs.onrender.com" + cleanPath;
+    return "https://talexajobs.onrender.com/" + cleanPath;
   };
   const getAvatarFallback = (user) => {
     if (!user) return "C";

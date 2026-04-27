@@ -12,7 +12,7 @@ function CompanyProfile() {
   useEffect(() => {
     const fetchCompanyData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/users/employer/" + id);
+        const response = await axios.get("https://talexajobs.onrender.com/api/users/employer/" + id);
         if (response.data.success) {
           setEmployer(response.data.employer);
           
@@ -68,9 +68,9 @@ function CompanyProfile() {
     if (cleanPath.startsWith('http')) {
       logoUrl = cleanPath;
     } else if (cleanPath.startsWith('/')) {
-      logoUrl = "http://localhost:5000" + cleanPath;
+      logoUrl = "https://talexajobs.onrender.com" + cleanPath;
     } else {
-      logoUrl = "http://localhost:5000/" + cleanPath;
+      logoUrl = "https://talexajobs.onrender.com/" + cleanPath;
     }
   }
   const avatarLetter = companyName.charAt(0).toUpperCase();

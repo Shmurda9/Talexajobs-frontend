@@ -21,7 +21,7 @@ function PrivacyPolicy() {
             <section>
               <h2 className="text-xl font-extrabold text-slate-900 mb-3">1. Information We Collect</h2>
               <p>
-                When you register on Talexajobs, we collect personal information necessary to provide our services. For <strong>Job Seekers</strong>, this includes your name, email, professional experience, uploaded resumes (CVs), and application history. For <strong>Employers</strong>, this includes company details, verification documents, and posted job data.
+                When you register on TalexaJobs, we collect personal information necessary to provide our services. For <strong>Job Seekers</strong>, this includes your name, email, professional experience, uploaded resumes (CVs), and application history. For <strong>Employers</strong>, this includes company details, verification documents, and posted job data.
               </p>
             </section>
 
@@ -38,7 +38,7 @@ function PrivacyPolicy() {
             <section>
               <h2 className="text-xl font-extrabold text-slate-900 mb-3">3. Data Sharing and Disclosure</h2>
               <p>
-                Talexajobs strictly protects your data. We only share Job Seeker profiles and resumes with Employers when you explicitly choose to submit an application. We do not sell your personal data to third-party marketing agencies. We may disclose information if legally required by law enforcement or to protect the safety and rights of our users.
+                TalexaJobs strictly protects your data. We only share Job Seeker profiles and resumes with Employers when you explicitly choose to submit an application. We do not sell your personal data to third-party marketing agencies. We may disclose information if legally required by law enforcement or to protect the safety and rights of our users.
               </p>
             </section>
 
@@ -58,7 +58,7 @@ function PrivacyPolicy() {
 
             <div className="pt-8 border-t border-slate-100 mt-8 text-center">
               <p className="text-slate-500 font-medium mb-4">Privacy Concerns?</p>
-              <a href="mailto:support@Talexajobs.com" className="inline-block bg-slate-900 text-white font-bold px-6 py-3 rounded-xl hover:bg-slate-800 transition shadow-md">
+              <a href="mailto:support@TalexaJobs.com" className="inline-block bg-slate-900 text-white font-bold px-6 py-3 rounded-xl hover:bg-slate-800 transition shadow-md">
                 Email Our Privacy Team
               </a>
             </div>

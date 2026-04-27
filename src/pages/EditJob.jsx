@@ -29,7 +29,7 @@ function EditJob() {
   useEffect(() => {
     const fetchJobDetails = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/jobs/job/" + id);
+        const response = await axios.get("https://talexajobs.onrender.com/api/jobs/job/" + id);
         
         if (response.data.success && response.data.job) {
           const job = response.data.job;
@@ -103,7 +103,7 @@ function EditJob() {
         applicationLink: formData.applicationLink
       };
 
-      await axios.put("http://localhost:5000/api/jobs/update/" + id, payload, {
+      await axios.put("https://talexajobs.onrender.com/api/jobs/update/" + id, payload, {
         headers: {
           token: token,
           Authorization: "Bearer " + token

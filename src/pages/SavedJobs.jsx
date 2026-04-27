@@ -15,7 +15,7 @@ function SavedJobs() {
         return;
       }
       try {
-        const response = await axios.get('http://localhost:5000/api/bookmarks/my-bookmarks', {
+        const response = await axios.get('https://talexajobs.onrender.com/api/bookmarks/my-bookmarks', {
           headers: { token: token, Authorization: "Bearer " + token }
         });
         if (response.data.success && response.data.savedJobs) {
@@ -32,7 +32,7 @@ function SavedJobs() {
 
   const handleRemove = async (jobId) => {
     try {
-      await axios.post("http://localhost:5000/api/bookmarks/toggle/" + jobId, {}, {
+      await axios.post("https://talexajobs.onrender.com/api/bookmarks/toggle/" + jobId, {}, {
         headers: { token: token, Authorization: "Bearer " + token }
       });
       setSavedJobs(savedJobs.filter(function(job) { return job._id !== jobId; }));
@@ -48,7 +48,7 @@ function SavedJobs() {
 
     const loadingToast = toast.loading("Submitting application...");
     try {
-      await axios.post('http://localhost:5000/api/applications/apply', 
+      await axios.post('https://talexajobs.onrender.com/api/applications/apply', 
         { jobId: jobId, coverLetter: coverLetter }, 
         { headers: { token: token, Authorization: "Bearer " + token } }
       );
@@ -75,8 +75,8 @@ function SavedJobs() {
 
     const cleanPath = rawUrl.replace(/\\/g, '/');
     if (cleanPath.startsWith('http')) return cleanPath;
-    if (cleanPath.startsWith('/')) return "http://localhost:5000" + cleanPath;
-    return "http://localhost:5000/" + cleanPath;
+    if (cleanPath.startsWith('/')) return "https://talexajobs.onrender.com" + cleanPath;
+    return "https://talexajobs.onrender.com/" + cleanPath;
   };
 
   const getAvatarLetter = (user) => {

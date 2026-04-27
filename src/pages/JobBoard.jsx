@@ -49,7 +49,7 @@ function JobBoard() {
   useEffect(() => {
     const fetchJobsData = async () => {
       try {
-        const response = await axios.get("http://localhost:5000/api/jobs/all");
+        const response = await axios.get("https://talexajobs.onrender.com/api/jobs/all");
         if (response.data.jobs && Array.isArray(response.data.jobs)) {
           setJobs(response.data.jobs);
         } else if (Array.isArray(response.data)) {
@@ -64,7 +64,7 @@ function JobBoard() {
         }
 
         if (token && isJobSeeker == true) {
-          const bookmarkRes = await axios.get("http://localhost:5000/api/bookmarks/my-bookmarks", {
+          const bookmarkRes = await axios.get("https://talexajobs.onrender.com/api/bookmarks/my-bookmarks", {
             headers: { token: token, Authorization: "Bearer " + token }
           });
           if (bookmarkRes.data.success && bookmarkRes.data.savedJobs) {
@@ -87,7 +87,7 @@ function JobBoard() {
       return;
     }
     try {
-      const response = await axios.post("http://localhost:5000/api/bookmarks/toggle/" + jobId, {}, {
+      const response = await axios.post("https://talexajobs.onrender.com/api/bookmarks/toggle/" + jobId, {}, {
         headers: { token: token, Authorization: "Bearer " + token }
       });
       if (response.data.isSaved) {
@@ -130,7 +130,7 @@ function JobBoard() {
     const loadingToast = toast.loading("Submitting application...");
 
     try {
-      await axios.post("http://localhost:5000/api/applications/apply", 
+      await axios.post("https://talexajobs.onrender.com/api/applications/apply", 
         { jobId: jobId, coverLetter: coverLetter }, 
         { headers: { token: token, Authorization: "Bearer " + token } }
       );
@@ -172,7 +172,7 @@ function JobBoard() {
     const loadingToast = toast.loading("Sending message...");
 
     try {
-      await axios.post("http://localhost:5000/api/messages/send", 
+      await axios.post("https://talexajobs.onrender.com/api/messages/send", 
         { receiverId: job.user._id, text: initialText, jobId: job._id }, 
         { headers: { token: token, Authorization: "Bearer " + token } }
       );

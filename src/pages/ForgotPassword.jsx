@@ -12,7 +12,7 @@ function ForgotPassword() {
     setLoading(true);
 
     try {
-      await axios.post('http://localhost:5000/api/auth/forgot-password', { email });
+      await axios.post('https://talexajobs.onrender.com/api/auth/forgot-password', { email });
       // Send them to the reset page and secretly pass the email along!
       navigate('/reset-password', { state: { email: email } });
     } catch (error) {

@@ -125,7 +125,7 @@ function Home() {
               <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-300">Next Step?</span>
             </h2>
             <p className="text-lg md:text-xl text-slate-300 font-medium mb-12 max-w-2xl mx-auto">
-              Join thousands of professionals and top-tier companies building the future together on Talexajobs.
+              Join thousands of professionals and top-tier companies building the future together on TalexaJobs.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
               <Link to="/jobs" className="w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white font-black py-4 px-10 rounded-2xl shadow-lg shadow-blue-600/30 transition-all duration-300 transform hover:-translate-y-1 text-lg">

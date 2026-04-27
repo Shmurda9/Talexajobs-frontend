@@ -62,12 +62,12 @@ function MyProfile() {
     if (userRole === 'employer') {
       if (userData && userData.employerInfo && userData.employerInfo.logoUrl) {
         const cleanPath = userData.employerInfo.logoUrl.replace(/\\/g, '/');
-        return "http://localhost:5000/" + cleanPath;
+        return "https://talexajobs.onrender.com/" + cleanPath;
       }
     } else {
       if (userData && userData.profilePictureUrl) {
         const cleanPath = userData.profilePictureUrl.replace(/\\/g, '/');
-        return "http://localhost:5000/" + cleanPath;
+        return "https://talexajobs.onrender.com/" + cleanPath;
       }
     }
     return "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
@@ -80,7 +80,7 @@ function MyProfile() {
       // 🚨 THE FIX: If it's already a Cloudinary link, just return it directly!
       if (cleanPath.startsWith('http')) return cleanPath;
       
-      return "http://localhost:5000/" + cleanPath;
+      return "https://talexajobs.onrender.com/" + cleanPath;
     }
     return "#";
   };
@@ -132,7 +132,7 @@ function MyProfile() {
         if (avatarFile) formData.append('companyLogo', avatarFile);
       }
 
-      const response = await axios.put('http://localhost:5000/api/users/profile', formData, {
+      const response = await axios.put('https://talexajobs.onrender.com/api/users/profile', formData, {
         headers: {
           'Authorization': "Bearer " + token,
           'token': token,

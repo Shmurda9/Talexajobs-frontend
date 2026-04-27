@@ -117,7 +117,7 @@ function Message() {
   const fetchInbox = useCallback(async () => {
     if (!token) return;
     try {
-      const res = await axios.get('http://localhost:5000/api/messages/inbox', {
+      const res = await axios.get('https://talexajobs.onrender.com/api/messages/inbox', {
         headers: { token: token, Authorization: "Bearer " + token }
       });
       if (res.data.success) setContacts(res.data.contacts);
@@ -135,7 +135,7 @@ function Message() {
 
   useEffect(() => {
     if (myId) {
-      const newSocket = io("http://localhost:5000", { transports: ['websocket', 'polling'] });
+      const newSocket = io("https://talexajobs.onrender.com", { transports: ['websocket', 'polling'] });
       setSocket(newSocket);
       newSocket.emit("addUser", myId);
       return () => newSocket.disconnect();
@@ -153,7 +153,7 @@ function Message() {
 
       if (isCurrentChat) {
         setMessages(prev => [...prev, message]);
-        axios.put('http://localhost:5000/api/messages/read/' + selectedContact._id, {}, {
+        axios.put('https://talexajobs.onrender.com/api/messages/read/' + selectedContact._id, {}, {
           headers: { token: token, Authorization: "Bearer " + token }
         });
       } else {
@@ -174,10 +174,10 @@ function Message() {
       setShowAttachMenu(false);
       clearAttachments();
       try {
-        await axios.put('http://localhost:5000/api/messages/read/' + selectedContact._id, {}, {
+        await axios.put('https://talexajobs.onrender.com/api/messages/read/' + selectedContact._id, {}, {
           headers: { token: token, Authorization: "Bearer " + token }
         });
-        const res = await axios.get('http://localhost:5000/api/messages/history/' + selectedContact._id, {
+        const res = await axios.get('https://talexajobs.onrender.com/api/messages/history/' + selectedContact._id, {
           headers: { token: token, Authorization: "Bearer " + token }
         });
         if (res.data.success) {
@@ -287,7 +287,7 @@ function Message() {
       if (selectedImage !== null) formData.append('image', selectedImage);
       if (audioBlob !== null) formData.append('audio', audioBlob, 'voicenote.webm');
 
-      const res = await axios.post('http://localhost:5000/api/messages/send', formData, {
+      const res = await axios.post('https://talexajobs.onrender.com/api/messages/send', formData, {
         headers: { 
           token: token, 
           Authorization: "Bearer " + token,
@@ -311,7 +311,7 @@ function Message() {
   const handleDeleteChat = async () => {
     if (!window.confirm("Are you sure you want to delete this chat?")) return;
     try {
-      await axios.delete('http://localhost:5000/api/messages/conversation/' + selectedContact._id, {
+      await axios.delete('https://talexajobs.onrender.com/api/messages/conversation/' + selectedContact._id, {
         headers: { token: token, Authorization: "Bearer " + token }
       });
       toast.success("Conversation deleted");
@@ -326,7 +326,7 @@ function Message() {
 
   const handleBlockUser = async () => {
     try {
-      const res = await axios.post('http://localhost:5000/api/messages/block/' + selectedContact._id, {}, {
+      const res = await axios.post('https://talexajobs.onrender.com/api/messages/block/' + selectedContact._id, {}, {
         headers: { token: token, Authorization: "Bearer " + token }
       });
       toast.success(res.data.message);
@@ -353,8 +353,8 @@ function Message() {
     if (url) {
       const cleanPath = url.replace(/\\/g, '/');
       if (cleanPath.startsWith('http')) return cleanPath;
-      if (cleanPath.startsWith('/')) return "http://localhost:5000" + cleanPath;
-      return "http://localhost:5000/" + cleanPath;
+      if (cleanPath.startsWith('/')) return "https://talexajobs.onrender.com" + cleanPath;
+      return "https://talexajobs.onrender.com/" + cleanPath;
     }
     return null;
   };

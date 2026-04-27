@@ -45,7 +45,7 @@ function ResetPassword() {
 
     setLoading(true);
     try {
-      await axios.post('http://localhost:5000/api/auth/reset-password', {
+      await axios.post('https://talexajobs.onrender.com/api/auth/reset-password', {
         email: userEmail,
         code: code,
         newPassword: newPassword

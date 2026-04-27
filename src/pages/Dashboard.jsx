@@ -35,7 +35,7 @@ function Dashboard() {
       }
 
       try {
-        const response = await axios.get("http://localhost:5000/api/applications/my-applications", {
+        const response = await axios.get("https://talexajobs.onrender.com/api/applications/my-applications", {
           headers: { Authorization: "Bearer " + token }
         });
         
@@ -60,7 +60,7 @@ function Dashboard() {
     const token = localStorage.getItem("token");
     
     try {
-      await axios.delete("http://localhost:5000/api/applications/delete/" + applicationId, {
+      await axios.delete("https://talexajobs.onrender.com/api/applications/delete/" + applicationId, {
         headers: { Authorization: "Bearer " + token }
       });
       
@@ -86,8 +86,8 @@ function Dashboard() {
 
     const cleanPath = rawUrl.replace(/\\/g, '/');
     if (cleanPath.startsWith('http')) return cleanPath;
-    if (cleanPath.startsWith('/')) return "http://localhost:5000" + cleanPath;
-    return "http://localhost:5000/" + cleanPath;
+    if (cleanPath.startsWith('/')) return "https://talexajobs.onrender.com" + cleanPath;
+    return "https://talexajobs.onrender.com/" + cleanPath;
   };
 
   const getAvatarLetter = (user) => {

@@ -18,7 +18,7 @@ function EmployerDashboard() {
     }
     const fetchJobs = async () => {
       try {
-        const res = await axios.get('http://localhost:5000/api/jobs/my-jobs', {
+        const res = await axios.get('https://talexajobs.onrender.com/api/jobs/my-jobs', {
           headers: { token: token, Authorization: "Bearer " + token }
         });
         if (res.data.success) {
@@ -37,7 +37,7 @@ function EmployerDashboard() {
     if (!window.confirm("Permanently delete this job posting? This cannot be undone.")) return;
     const loadingToast = toast.loading("Deleting job...");
     try {
-      await axios.delete('http://localhost:5000/api/jobs/delete/' + jobId, {
+      await axios.delete('https://talexajobs.onrender.com/api/jobs/delete/' + jobId, {
         headers: { token: token, Authorization: "Bearer " + token }
       });
       toast.dismiss(loadingToast);

@@ -32,17 +32,17 @@ function AdminDashboard() {
 
         const headers = { headers: { token: token, Authorization: "Bearer " + token } };
 
-        const empResponse = await axios.get("http://localhost:5000/api/users/admin/employers", headers);
+        const empResponse = await axios.get("https://talexajobs.onrender.com/api/users/admin/employers", headers);
         if (empResponse.data.success) {
           setEmployers(empResponse.data.employers);
         }
 
-        const seekerResponse = await axios.get("http://localhost:5000/api/users/admin/seekers", headers);
+        const seekerResponse = await axios.get("https://talexajobs.onrender.com/api/users/admin/seekers", headers);
         if (seekerResponse.data.success) {
           setSeekers(seekerResponse.data.seekers);
         }
 
-        const jobResponse = await axios.get("http://localhost:5000/api/jobs/admin/all", headers);
+        const jobResponse = await axios.get("https://talexajobs.onrender.com/api/jobs/admin/all", headers);
         if (jobResponse.data.jobs && Array.isArray(jobResponse.data.jobs)) {
           setAllJobs(jobResponse.data.jobs);
         } else if (Array.isArray(jobResponse.data)) {
@@ -63,7 +63,7 @@ function AdminDashboard() {
   const handleVerifyEmployer = async (employerId, newStatus) => {
     const token = localStorage.getItem("token");
     try {
-      await axios.put("http://localhost:5000/api/users/admin/verify-employer/" + employerId,
+      await axios.put("https://talexajobs.onrender.com/api/users/admin/verify-employer/" + employerId,
         { status: newStatus },
         { headers: { token: token, Authorization: "Bearer " + token } }
       );
@@ -87,7 +87,7 @@ function AdminDashboard() {
   const handleJobStatus = async (jobId, newStatus) => {
     const token = localStorage.getItem("token");
     try {
-      await axios.put("http://localhost:5000/api/jobs/admin/status/" + jobId,
+      await axios.put("https://talexajobs.onrender.com/api/jobs/admin/status/" + jobId,
         { adminStatus: newStatus },
         { headers: { token: token, Authorization: "Bearer " + token } }
       );
@@ -111,7 +111,7 @@ function AdminDashboard() {
     if (!isSure) return;
 
     try {
-      await axios.delete("http://localhost:5000/api/jobs/delete/" + jobId, {
+      await axios.delete("https://talexajobs.onrender.com/api/jobs/delete/" + jobId, {
         headers: { token: token, Authorization: "Bearer " + token }
       });
       setAllJobs(allJobs.filter((job) => job._id !== jobId));
@@ -132,7 +132,7 @@ function AdminDashboard() {
     if (!isSure) return;
 
     try {
-      await axios.put("http://localhost:5000/api/users/admin/block/" + userId,
+      await axios.put("https://talexajobs.onrender.com/api/users/admin/block/" + userId,
         { isBlocked: newStatus },
         { headers: { token: token, Authorization: "Bearer " + token } }
       );
@@ -480,7 +480,7 @@ function AdminDashboard() {
                     <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                     External Routing Enabled
                   </h4>
-                  <p className="text-blue-700 text-sm font-medium">This employer is redirecting candidates to apply outside of Talexajobs:</p>
+                  <p className="text-blue-700 text-sm font-medium">This employer is redirecting candidates to apply outside of TalexaJobs:</p>
                   <a href={selectedJob.applicationLink} target="_blank" rel="noreferrer" className="text-blue-600 font-bold text-sm hover:underline break-all mt-1">
                     {selectedJob.applicationLink}
                   </a>

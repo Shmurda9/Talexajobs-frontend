@@ -8,7 +8,7 @@ function Footer() {
         
         {/* Brand Section */}
         <div className="mb-6 md:mb-0">
-          <h2 className="text-2xl font-extrabold text-white tracking-wider">Talexajobs</h2>
+          <h2 className="text-2xl font-extrabold text-white tracking-wider">TalexaJobs</h2>
           <p className="text-sm mt-2 text-slate-400 max-w-sm">
             Connecting top global talent with the best worldwide employers. Build your future today.
           </p>
@@ -18,13 +18,13 @@ function Footer() {
         <div className="flex space-x-6 mt-4 md:mt-0">
           <Link to="/privacy" className="hover:text-blue-400 transition duration-200 text-sm">Privacy Policy</Link>
           <Link to="/terms" className="hover:text-blue-400 transition duration-200 text-sm">Terms of Service</Link>
-          <a href="mailto:support@Talexajobs.com" className="hover:text-blue-400 transition duration-200 text-sm">Contact Us</a>
+          <a href="mailto:support@TalexaJobs.com" className="hover:text-blue-400 transition duration-200 text-sm">Contact Us</a>
         </div>
       </div>
       
       {/* Copyright */}
       <div className="text-center text-sm text-slate-500 mt-8 border-t border-slate-800 pt-6">
-        &copy; {new Date().getFullYear()} Talexajobs Platform. All rights reserved.
+        &copy; {new Date().getFullYear()} TalexaJobs Platform. All rights reserved.
       </div>
     </footer>
   );
