@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client'; 
-import axios from 'axios'; // 🚨 NEW: Added Axios for bulletproof notifications
+import axios from 'axios';
 
 function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -42,14 +42,13 @@ function Navbar() {
     { code: 'vi', name: 'Vietnamese', flag: '🇻🇳' }
   ];
 
-  // 🚨 BULLETPROOF POLLING: Checks database every 15 seconds for unread messages
   useEffect(() => {
     const checkUnreadMessages = async () => {
       if (!token) return;
       const currentPath = window.location.pathname;
       if (currentPath.indexOf('/messages') !== -1) {
         setHasNewMessage(false);
-        return; // Don't show dot if they are already on the messages page
+        return; 
       }
 
       try {
@@ -71,14 +70,12 @@ function Navbar() {
       }
     };
 
-    checkUnreadMessages(); // Check immediately on load
-    const intervalId = setInterval(checkUnreadMessages, 15000); // Check every 15 seconds
+    checkUnreadMessages(); 
+    const intervalId = setInterval(checkUnreadMessages, 15000); 
     
     return () => clearInterval(intervalId);
   }, [token, location.pathname]);
 
-
-  // LIVE SOCKET FALLBACK
   useEffect(() => {
     if (token) {
       try {
@@ -241,8 +238,7 @@ function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-[72px] items-center">
             
-            <Link to="/" className="flex items-center gap-2 flex-shrink-0 max-w-[50%] group">
-              {/* FIXED LOGO LAYOUT */}
+            <Link to="/" className="flex items-center gap-2 flex-shrink-0 max-w-[40%] group">
               <img 
                 src="/logo.png" 
                 alt="" 
@@ -250,7 +246,7 @@ function Navbar() {
                 style={{ minWidth: '32px' }}
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
-              <span className="font-black text-lg sm:text-2xl tracking-wide text-white truncate">
+              <span className="font-black text-lg sm:text-2xl tracking-wide text-white truncate w-full">
                 TalexaJobs
               </span>
             </Link>
@@ -279,7 +275,7 @@ function Navbar() {
                     {token && userRole === 'jobSeeker' && (
                       <>
                       <Link to="/dashboard" className={"text-sm font-bold transition-all " + (isActive('/dashboard') ? "text-white border-b-2 border-white pb-1" : "text-blue-100 hover:text-white")}>Dashboard</Link>
-                        <Link to="/saved-jobs" className={"text-sm font-bold transition-all " + (isActive('/saved-jobs') ? "text-white border-b-2 border-white pb-1" : "text-blue-100 hover:text-white")}>Saved Jobs</Link>
+                      <Link to="/saved-jobs" className={"text-sm font-bold transition-all " + (isActive('/saved-jobs') ? "text-white border-b-2 border-white pb-1" : "text-blue-100 hover:text-white")}>Saved Jobs</Link>
                       </>
                     )}
                   </>
@@ -318,25 +314,24 @@ function Navbar() {
                     </Link>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-3 bg-blue-800 pr-3 pl-1 py-1 rounded-full">
-                    <Link to={userRole === 'admin' ? "/admin" : "/my-profile"} className="h-8 w-8 rounded-full border border-blue-600 overflow-hidden bg-blue-900 flex items-center justify-center hover:border-white transition cursor-pointer">
+                  <div className="flex items-center gap-2 bg-blue-800 pr-2 pl-1 py-1 rounded-full max-w-[180px]">
+                    <Link to={userRole === 'admin' ? "/admin" : "/my-profile"} className="h-8 w-8 shrink-0 rounded-full border border-blue-600 overflow-hidden bg-blue-900 flex items-center justify-center hover:border-white transition cursor-pointer">
                       {userRole !== 'admin' && getProfilePicUrl() ? (
                         <img src={getProfilePicUrl()} alt="Profile" className="h-full w-full object-cover" />
                       ) : (
                         <span className="font-bold text-blue-100 text-xs">{getAvatarFallback()}</span>
                       )}
                     </Link>
-                    <div className="flex flex-col justify-center max-w-[100px]">
-                      <span className="text-[11px] font-bold text-white truncate">{userData ? userData.fullName.split(' ')[0] : 'User'}</span>
+                    <div className="flex flex-col justify-center min-w-0 flex-1">
+                      <span className="text-[11px] font-bold text-white truncate block w-full">{userData ? userData.fullName.split(' ')[0] : 'User'}</span>
                     </div>
-                    <button onClick={handleLogout} className="text-blue-300 hover:text-white transition ml-1" title="Logout">
+                    <button onClick={handleLogout} className="text-blue-300 hover:text-white transition ml-1 shrink-0 p-1" title="Logout">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                      </button>
+                    </button>
                   </div>
                 )}
               </div>
             </div>
-
             <div className="lg:hidden flex items-center gap-3 pr-1">
               
               {token && userRole !== 'admin' && (
@@ -368,22 +363,22 @@ function Navbar() {
               
               {token && userData && (
                 <div className="flex items-center justify-between px-3 py-4 mb-4 border-b border-blue-700">
-                  <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full border border-blue-500 overflow-hidden bg-blue-900 flex items-center justify-center">
+                  <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
+                    <div className="h-10 w-10 shrink-0 rounded-full border border-blue-500 overflow-hidden bg-blue-900 flex items-center justify-center">
                       {userRole !== 'admin' && getProfilePicUrl() ? (
                         <img src={getProfilePicUrl()} alt="Profile" className="h-full w-full object-cover" />
                       ) : (
                         <span className="font-bold text-white text-sm">{getAvatarFallback()}</span>
                       )}
                     </div>
-                    <div>
-                      <p className="font-bold text-white text-sm">{userData.fullName}</p>
+                    <div className="min-w-0 flex-1">
+                      <p className="font-bold text-white text-sm truncate block w-full">{userData.fullName}</p>
                       <p className="text-[10px] text-blue-200 font-extrabold mt-0.5 uppercase tracking-wider">{userRole}</p>
                     </div>
                   </div>
-                  <button onClick={handleLogout} className="text-blue-200 hover:text-white p-2 bg-blue-700 rounded-lg">
+                  <button onClick={handleLogout} className="text-blue-200 hover:text-white p-2 bg-blue-700 rounded-lg shrink-0">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
-                    </button>
+                  </button>
                 </div>
               )}
 

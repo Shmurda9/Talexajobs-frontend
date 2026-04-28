@@ -158,7 +158,14 @@ function ProfileSetup() {
       if (profilePicFile) formData.append("profilePicture", profilePicFile);
 
       if (userRole === "jobSeeker") {
-        formData.append("candidateInfo", JSON.stringify(candidateData));
+        // 🚨 FIX: Safe string concatenation to avoid copy-paste errors
+        const formattedCandidateData = {
+          ...candidateData,
+          skills: candidateData.skills.map(skill => 
+            typeof skill === 'object' ? skill.name + " - " + skill.level : skill
+          )
+        };
+        formData.append("candidateInfo", JSON.stringify(formattedCandidateData));
         if (candidateFile) formData.append("resume", candidateFile);
       } else if (userRole === "employer") {
         formData.append("employerInfo", JSON.stringify(employerData));
@@ -230,12 +237,9 @@ function ProfileSetup() {
 
             <form onSubmit={handleSubmit} onKeyDown={handleKeyDown} className="space-y-6">
 
-              {/* ======================================================= */}
-              {/* CANDIDATE STEPS                                         */}
-              {/* ======================================================= */}
               {userRole === "jobSeeker" && (
                 <>
-                  {/* STEP 1: Basic Info */}
+                  {/* STEP 1 */}
                   {currentStep === 1 && (
                     <div className="space-y-6 animate-fade-in">
                       <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2">Basic Information</h3>
@@ -261,7 +265,6 @@ function ProfileSetup() {
                         <label className="block text-sm font-extrabold text-slate-700 mb-2 tracking-wide">Location</label>
                         <input type="text" name="location" value={candidateData.location} onChange={handleCandidateChange} placeholder="e.g. City, State, Country" required className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
                       </div>
-
                       <div className="flex items-center justify-between bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm">
                         <div>
                           <h4 className="text-sm font-extrabold text-slate-900">Open to Work</h4>
@@ -300,12 +303,24 @@ function ProfileSetup() {
                         </div>
                         
                         <div className="flex flex-wrap gap-2 mt-4">
-                          {candidateData.skills.map((skill, index) => (
-                            <div key={index} className="bg-blue-50 border border-blue-200 text-blue-800 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 shadow-sm">
-                              {skill.name} <span className="text-xs font-medium text-blue-600/70 bg-blue-100/50 px-1.5 py-0.5 rounded-md">{skill.level}</span>
-                              <button type="button" onClick={() => removeSkill(index)} className="text-blue-400 hover:text-rose-500 font-black ml-1 transition-colors">&times;</button>
-                            </div>
-                          ))}
+                          {/* 🚨 FIX: Safely parse both Backend Strings and Frontend Objects */}
+                          {candidateData.skills.map((skill, index) => {
+                            const isObject = typeof skill === 'object';
+                            const skillName = isObject ? skill.name : skill.split(' - ')[0];
+                            const skillLevel = isObject ? skill.level : skill.split(' - ')[1];
+
+                            return (
+                              <div key={index} className="bg-blue-50 border border-blue-200 text-blue-800 px-3 py-1.5 rounded-lg text-sm font-bold flex items-center gap-2 shadow-sm">
+                                {skillName} 
+                                {skillLevel && (
+                                  <span className="text-xs font-medium text-blue-600/70 bg-blue-100/50 px-1.5 py-0.5 rounded-md">
+                                    {skillLevel}
+                                  </span>
+                                )}
+                                <button type="button" onClick={() => removeSkill(index)} className="text-blue-400 hover:text-rose-500 font-black ml-1 transition-colors">&times;</button>
+                              </div>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -339,7 +354,7 @@ function ProfileSetup() {
                             <div>
                               <label className="block text-xs font-bold text-slate-500 mb-1">End Date</label>
                               <input type="text" placeholder="e.g. Present, or Dec 2023" value={newWork.endDate} onChange={(e) => setNewWork({...newWork, endDate: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-                            </div>
+                              </div>
                           </div>
                           
                           <div>
@@ -380,7 +395,7 @@ function ProfileSetup() {
                             <div>
                               <label className="block text-xs font-bold text-slate-500 mb-1">Institution / School Name</label>
                               <input type="text" placeholder="Name of School or Institution" value={newEdu.schoolName} onChange={(e) => setNewEdu({...newEdu, schoolName: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
-                            </div>
+                              </div>
                             <div>
                               <label className="block text-xs font-bold text-slate-500 mb-1">Degree / Certificate</label>
                               <input type="text" placeholder="Degree or Certificate Name" value={newEdu.degree} onChange={(e) => setNewEdu({...newEdu, degree: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
@@ -426,7 +441,6 @@ function ProfileSetup() {
                           <input type="text" name="salaryExpectation" placeholder="e.g. 50,000" value={candidateData.salaryExpectation} onChange={handleCandidateChange} className="appearance-none block w-full pl-8 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
                         </div>
                       </div>
-                      
                       <div className="bg-slate-50 border-2 border-dashed border-slate-300 hover:border-blue-400 p-8 rounded-2xl text-center transition-colors group relative">
                         <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
@@ -446,9 +460,6 @@ function ProfileSetup() {
                 </>
               )}
 
-              {/* ======================================================= */}
-              {/* EMPLOYER STEPS (Untouched)                                */}
-              {/* ======================================================= */}
               {userRole === "employer" && (
                 <>
                   {currentStep === 1 && (
