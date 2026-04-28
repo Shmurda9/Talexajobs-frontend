@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import axios from 'axios';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import toast from 'react-hot-toast';
 import { io } from 'socket.io-client';
 
-// --- SAFE ICON COMPONENTS (Prevents clipboard truncation) ---
+// --- SAFE ICON COMPONENTS ---
 const IconPlay = () => (<svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>);
 const IconPause = () => (<svg className="w-8 h-8" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>);
 const IconEmpty = () => (<svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03-8-9-8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>);
@@ -78,6 +78,7 @@ const CustomAudioPlayer = ({ audioUrl, isMe }) => {
 // --- MAIN CHAT COMPONENT ---
 function Message() {
   const navigate = useNavigate();
+  const location = useLocation(); // 🚨 NEW: Catches teleports from other pages
   const [contacts, setContacts] = useState([]);
   const [selectedContact, setSelectedContact] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -132,6 +133,15 @@ function Message() {
     if (!token) navigate('/login');
     else fetchInbox();
   }, [token, navigate, fetchInbox]);
+
+  // 🚨 NEW: Auto-selects employer if teleported here from a job listing
+  useEffect(() => {
+    if (location.state && location.state.prefilledContact) {
+      setSelectedContact(location.state.prefilledContact);
+      // Clean the URL history so a refresh doesn't trigger it again
+      window.history.replaceState({}, document.title);
+    }
+  }, [location]);
 
   useEffect(() => {
     if (myId) {
@@ -234,7 +244,7 @@ function Message() {
         mediaRecorderRef.current.start();
         setIsRecording(true);
       } catch (err) {
-        toast.error("Microphone access denied.");
+        toast.error("Microphone access denied by your browser.");
       }
     }
   };
@@ -302,7 +312,9 @@ function Message() {
         fetchInbox(); 
       }
     } catch (error) {
-      toast.error("Failed to send message.");
+      // 🚨 FIX: Logs exact backend crash reason so we can see why it rejects the audio
+      console.error("Send Error:", error.response?.data || error.message);
+      toast.error(error.response?.data?.message || "Failed to send file. Your backend might be rejecting audio uploads.");
     } finally {
       setIsSending(false);
     }
@@ -425,7 +437,8 @@ function Message() {
             ) : (
               <>
                 {/* CHAT HEADER */}
-                <div className="p-3 sm:p-4 bg-white border-b border-slate-200 flex items-center justify-between shadow-sm z-10 w-full overflow-hidden">
+                {/* 🚨 FIX: Removed overflow-hidden here so the menu can drop down safely */}
+                <div className="p-3 sm:p-4 bg-white border-b border-slate-200 flex items-center justify-between shadow-sm z-10 w-full">
                   <div className="flex items-center gap-3 overflow-hidden">
                     <button onClick={() => setSelectedContact(null)} className="md:hidden p-2 text-slate-400 hover:text-slate-700 bg-slate-50 hover:bg-slate-100 rounded-full transition flex-shrink-0">
                       <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
@@ -443,7 +456,7 @@ function Message() {
                     <button onClick={() => setShowMenu(!showMenu)} className="p-2 text-slate-400 hover:text-slate-700 hover:bg-slate-50 rounded-full transition">
                       <IconMenu />
                     </button>
-                    
+
                     {showMenu && (
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50 overflow-hidden">
                         <button onClick={handleBlockUser} className="w-full text-left px-4 py-3 text-sm font-bold text-slate-700 hover:bg-slate-50 transition border-b border-slate-100 flex items-center gap-2">
@@ -571,4 +584,3 @@ function Message() {
 }
 
 export default Message;
-          

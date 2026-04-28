@@ -125,7 +125,7 @@ function JobBoard() {
     }
 
     const coverLetter = window.prompt("Please provide a brief cover letter or introduction (Optional):");
-    if (coverLetter == null) return; 
+    if (coverLetter == null) return;
 
     const loadingToast = toast.loading("Submitting application...");
 
@@ -166,24 +166,10 @@ function JobBoard() {
       return;
     }
 
-    const initialText = window.prompt("Send a message to " + getDisplayName(job.user) + " regarding the " + job.title + " role:");
-    if (initialText == null || initialText.trim() == "") return; 
-
-    const loadingToast = toast.loading("Sending message...");
-
-    try {
-      await axios.post("https://talexajobs.onrender.com/api/messages/send", 
-        { receiverId: job.user._id, text: initialText, jobId: job._id }, 
-        { headers: { token: token, Authorization: "Bearer " + token } }
-      );
-      toast.dismiss(loadingToast);
-      toast.success("Message sent.");
-      setSelectedJob(null);
-      navigate("/messages"); 
-    } catch (error) {
-      toast.dismiss(loadingToast);
-      toast.error("Failed to send message.");
-    }
+    // 🚨 FIX: Removed window.prompt! Now we instantly teleport to the messages page 
+    // and pass the employer data along so the chat screen can open automatically.
+    setSelectedJob(null);
+    navigate("/messages", { state: { prefilledContact: job.user } });
   };
 
   const filteredJobs = jobs.filter((job) => {
@@ -298,7 +284,7 @@ function JobBoard() {
   };
 
   const renderJobCard = (job, isSpecial = false) => {
-    const uniqueKey = job._id || Math.random().toString();
+    const uniqueKey = job._id + Math.random().toString();
     
     let isApproved = false;
     if (job.adminStatus == "approved") { isApproved = true; }
@@ -421,7 +407,7 @@ function JobBoard() {
           
           {actionButton}
         </div>
-        </div>
+      </div>
     );
   };
 
@@ -556,7 +542,7 @@ function JobBoard() {
               <div className="min-w-0 flex-1">
                 <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 truncate">{selectedJob.title}</h3>
                 <p className="text-xs sm:text-sm text-blue-600 font-bold truncate mt-0.5 sm:mt-1">{getDisplayName(selectedJob.user)}</p>
-              </div>
+                </div>
               <button onClick={() => setSelectedJob(null)} className="text-slate-400 hover:text-slate-700 transition bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-full p-2 flex-shrink-0">
                 Close
               </button>

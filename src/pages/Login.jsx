@@ -35,29 +35,29 @@ function Login() {
 
         toast.success("Welcome back, " + user.fullName.split(" ")[0] + "!");
 
+        // 🚨 FIX: Instant teleportation instead of slow window reloads
         if (user.role === "admin") {
-          setTimeout(() => { window.location.href = "/admin"; }, 1000);
+          navigate("/admin");
           return;
         }
         
         let isProfileComplete = false;
         if (user.role === "jobSeeker" && user.candidateInfo && user.candidateInfo.headline) {
           isProfileComplete = true; 
-        } else if (user.role === "employer" && user.employerInfo && user.employerInfo.companyName) {
+        } else if (user.role === "employer" && user.employerInfo && user.employerInfo.companyDescription) {
           isProfileComplete = true; 
         }
 
-        setTimeout(() => {
-          if (isProfileComplete) {
-            if (user.role === "employer") {
-              window.location.href = "/employer-dashboard";
-            } else {
-              window.location.href = "/dashboard";
-            }
+        // Instantly route based on profile status
+        if (isProfileComplete) {
+          if (user.role === "employer") {
+            navigate("/employer-dashboard");
           } else {
-            window.location.href = "/profile-setup";
+            navigate("/dashboard");
           }
-        }, 1000);
+        } else {
+          navigate("/profile-setup");
+        }
       }
     } catch (error) {
       toast.dismiss(loadingToast);
@@ -164,8 +164,8 @@ function Login() {
                 className="w-full flex justify-center py-4 px-4 border border-transparent rounded-xl shadow-lg shadow-blue-500/30 text-sm font-black text-white bg-blue-600 hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transform hover:-translate-y-0.5 transition-all duration-200"
               >
                 Sign In 
-                </button>
-            </div>
+              </button>
+              </div>
             
           </form>
 

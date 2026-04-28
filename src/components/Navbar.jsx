@@ -238,7 +238,8 @@ function Navbar() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-[72px] items-center">
             
-            <Link to="/" className="flex items-center gap-2 flex-shrink-0 max-w-[40%] group">
+            <Link to="/" className="flex items-center gap-2 flex-shrink-0 max-w-[50%] group">
+              {/* FIXED LOGO LAYOUT - RESTORED TO YOUR ORIGINAL */}
               <img 
                 src="/logo.png" 
                 alt="" 
@@ -246,7 +247,7 @@ function Navbar() {
                 style={{ minWidth: '32px' }}
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
-              <span className="font-black text-lg sm:text-2xl tracking-wide text-white truncate w-full">
+              <span className="font-black text-lg sm:text-2xl tracking-wide text-white truncate">
                 TalexaJobs
               </span>
             </Link>
@@ -314,24 +315,26 @@ function Navbar() {
                     </Link>
                   </div>
                 ) : (
-                  <div className="flex items-center gap-2 bg-blue-800 pr-2 pl-1 py-1 rounded-full max-w-[180px]">
-                    <Link to={userRole === 'admin' ? "/admin" : "/my-profile"} className="h-8 w-8 shrink-0 rounded-full border border-blue-600 overflow-hidden bg-blue-900 flex items-center justify-center hover:border-white transition cursor-pointer">
+                  <div className="flex items-center gap-3 bg-blue-800 pr-3 pl-1 py-1 rounded-full">
+                    <Link to={userRole === 'admin' ? "/admin" : "/my-profile"} className="h-8 w-8 rounded-full border border-blue-600 overflow-hidden bg-blue-900 flex items-center justify-center hover:border-white transition cursor-pointer">
                       {userRole !== 'admin' && getProfilePicUrl() ? (
                         <img src={getProfilePicUrl()} alt="Profile" className="h-full w-full object-cover" />
                       ) : (
                         <span className="font-bold text-blue-100 text-xs">{getAvatarFallback()}</span>
                       )}
                     </Link>
-                    <div className="flex flex-col justify-center min-w-0 flex-1">
-                      <span className="text-[11px] font-bold text-white truncate block w-full">{userData ? userData.fullName.split(' ')[0] : 'User'}</span>
+                    {/* ONLY FIX: Added min-w-0 to safely truncate the name/email without layout breaks */}
+                    <div className="flex flex-col justify-center min-w-0 max-w-[100px]">
+                      <span className="text-[11px] font-bold text-white truncate block">{userData ? userData.fullName.split(' ')[0] : 'User'}</span>
                     </div>
-                    <button onClick={handleLogout} className="text-blue-300 hover:text-white transition ml-1 shrink-0 p-1" title="Logout">
+                    <button onClick={handleLogout} className="text-blue-300 hover:text-white transition ml-1 shrink-0" title="Logout">
                       <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
                     </button>
                   </div>
                 )}
-              </div>
+                </div>
             </div>
+
             <div className="lg:hidden flex items-center gap-3 pr-1">
               
               {token && userRole !== 'admin' && (
@@ -363,7 +366,7 @@ function Navbar() {
               
               {token && userData && (
                 <div className="flex items-center justify-between px-3 py-4 mb-4 border-b border-blue-700">
-                  <div className="flex items-center gap-3 min-w-0 flex-1 pr-2">
+                  <div className="flex items-center gap-3 min-w-0">
                     <div className="h-10 w-10 shrink-0 rounded-full border border-blue-500 overflow-hidden bg-blue-900 flex items-center justify-center">
                       {userRole !== 'admin' && getProfilePicUrl() ? (
                         <img src={getProfilePicUrl()} alt="Profile" className="h-full w-full object-cover" />
@@ -371,8 +374,9 @@ function Navbar() {
                         <span className="font-bold text-white text-sm">{getAvatarFallback()}</span>
                       )}
                     </div>
-                    <div className="min-w-0 flex-1">
-                      <p className="font-bold text-white text-sm truncate block w-full">{userData.fullName}</p>
+                    {/* ONLY FIX: Added min-w-0 to safely truncate the name/email in mobile view */}
+                    <div className="min-w-0 pr-2">
+                      <p className="font-bold text-white text-sm truncate block">{userData.fullName}</p>
                       <p className="text-[10px] text-blue-200 font-extrabold mt-0.5 uppercase tracking-wider">{userRole}</p>
                     </div>
                   </div>
@@ -387,7 +391,7 @@ function Navbar() {
                   <Link to="/admin" className="block px-4 py-3 rounded-xl text-sm font-bold text-white hover:bg-blue-700">Command Center</Link>
                   <Link to="/" className="block px-4 py-3 rounded-xl text-sm font-bold text-blue-100 hover:bg-blue-700 hover:text-white">View Live Site</Link>
                 </>
-              ) : (
+                ) : (
                 <>
                 <Link to="/" className={"block px-4 py-3 rounded-xl text-sm font-bold " + (isActive('/') ? "bg-blue-900 text-white" : "text-blue-100 hover:bg-blue-700 hover:text-white")}>Home</Link>
                   <Link to="/jobs" className={"block px-4 py-3 rounded-xl text-sm font-bold " + (isActive('/jobs') ? "bg-blue-900 text-white" : "text-blue-100 hover:bg-blue-700 hover:text-white")}>Find Jobs</Link>
