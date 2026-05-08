@@ -771,17 +771,13 @@ function Message() {
                     )}
                     
                     <div className="flex-shrink-0 pb-0.5">
-                      {hasContentToSend && !isRecording ? (
+                      {hasContentToSend ? (
                         <button type="submit" className="h-[44px] w-[44px] bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-sm focus:outline-none transition-colors">
                           <IconSend />
                         </button>
-                      ) : isRecording ? (
-                         <button type="button" onClick={stopAndSendRecording} className="h-[44px] w-[44px] bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-sm focus:outline-none transition-colors transform scale-110">
-                          <IconSend />
-                        </button>
                       ) : (
-                        <button type="button" onClick={startRecording} className="h-[44px] w-[44px] bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-sm focus:outline-none transition-colors">
-                           <IconMic />
+                        <button type="button" disabled className="h-[44px] w-[44px] bg-slate-200 text-slate-400 rounded-full flex items-center justify-center shadow-sm focus:outline-none cursor-not-allowed">
+                          <IconSend />
                         </button>
                       )}
                     </div>
