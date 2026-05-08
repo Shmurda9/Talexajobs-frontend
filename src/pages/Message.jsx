@@ -306,7 +306,7 @@ function Message() {
         
         // 🚨 Set the correct file extension so Cloudinary doesn't get confused
         let fileExtension = 'webm';
-        if (mimeType.includes('mp4')  mimeType.includes('m4a')  mimeType.includes('aac')) {
+        if (mimeType.includes('mp4') || mimeType.includes('m4a') || mimeType.includes('aac')) {
           fileExtension = 'm4a';
         }
         
