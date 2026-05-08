@@ -15,13 +15,11 @@ const IconUnblock = () => (<svg className="w-4 h-4" fill="none" stroke="currentC
 const IconDelete = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>);
 const IconPlus = () => (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>);
 const IconPhoto = () => (<svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>);
-const IconFile = () => (<svg className="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>);
 const IconSend = () => (<svg className="w-5 h-5 ml-0.5" fill="currentColor" viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z" /></svg>);
 const IconMic = () => (<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>);
-const IconTrash = () => (<svg className="w-5 h-5 text-slate-400 hover:text-rose-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>);
 const IconChevronDown = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>);
 
-// --- DYNAMIC AUDIO PLAYER ---
+// --- DYNAMIC AUDIO PLAYER (Kept in case users have old audio messages in DB) ---
 const CustomAudioPlayer = ({ audioUrl, isMe }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -93,12 +91,6 @@ function Message() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   
-  // Audio & Timer States
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingDuration, setRecordingDuration] = useState(0);
-  const [audioPreviewUrl, setAudioPreviewUrl] = useState(null); 
-  const [audioBlob, setAudioBlob] = useState(null); 
-  
   // Edit & Menu States
   const [editingMessage, setEditingMessage] = useState(null);
   const [activeBubbleMenu, setActiveBubbleMenu] = useState(null);
@@ -107,10 +99,6 @@ function Message() {
   const [isBlocked, setIsBlocked] = useState(false);
 
   const chatContainerRef = useRef(null);
-  const mediaRecorderRef = useRef(null);
-  const streamRef = useRef(null); 
-  const audioChunksRef = useRef([]);
-  const timerRef = useRef(null);
   const textareaRef = useRef(null); 
   const [socket, setSocket] = useState(null); 
 
@@ -134,7 +122,6 @@ function Message() {
         headers: { token: token, Authorization: "Bearer " + token }
       });
       if (res.data.success) {
-        // 🚨 PREVENT DUPLICATE CONTACTS IN SIDEBAR
         const uniqueContacts = res.data.contacts.filter((v,i,a)=>a.findIndex(t=>(t._id===v._id))===i);
         setContacts(uniqueContacts);
       }
@@ -171,7 +158,6 @@ function Message() {
       return () => newSocket.disconnect();
     }
   }, [myId]);
-
   useEffect(() => {
     if (!socket) return;
     const handleIncomingMessage = (message) => {
@@ -182,7 +168,6 @@ function Message() {
       }
 
       if (isCurrentChat) {
-        // 🚨 PREVENT DUPLICATE MESSAGES FROM SOCKET
         setMessages(prev => {
           if (prev.some(m => m._id === message._id)) return prev;
           return [...prev, message];
@@ -216,7 +201,6 @@ function Message() {
           headers: { token: token, Authorization: "Bearer " + token }
         });
         if (res.data.success) {
-          // 🚨 PREVENT DUPLICATE MESSAGES IN HISTORY
           const uniqueMsgs = res.data.messages.filter((v,i,a)=>a.findIndex(t=>(t._id===v._id))===i);
           setMessages(uniqueMsgs);
           fetchInbox(); 
@@ -239,109 +223,6 @@ function Message() {
   const clearAttachments = () => {
     setSelectedImage(null);
     setImagePreview(null);
-    setAudioBlob(null);
-    setAudioPreviewUrl(null);
-    audioChunksRef.current = []; 
-  };
-
-  const formatTime = (seconds) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    let zeroPrefix = "";
-    if (s < 10) {
-        zeroPrefix = "0";
-    }
-    return m + ":" + zeroPrefix + s;
-  };
-
-  const startRecording = async () => {
-    try {
-      clearAttachments(); 
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream; 
-      
-      mediaRecorderRef.current = new MediaRecorder(stream);
-      audioChunksRef.current = [];
-
-      mediaRecorderRef.current.ondataavailable = (e) => {
-        if (e.data.size > 0) audioChunksRef.current.push(e.data);
-      };
-
-      mediaRecorderRef.current.start();
-      setIsRecording(true);
-      
-      setRecordingDuration(0);
-      timerRef.current = setInterval(() => {
-        setRecordingDuration(prev => prev + 1);
-      }, 1000);
-
-    } catch (err) {
-      toast.error("Microphone access denied by your browser.");
-    }
-  };
-
-  const cancelRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      mediaRecorderRef.current.onstop = null; 
-      mediaRecorderRef.current.stop();
-    }
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-    
-    clearInterval(timerRef.current);
-    setIsRecording(false);
-    setRecordingDuration(0);
-    audioChunksRef.current = [];
-  };
-
-  const stopAndSendRecording = () => {
-    if (mediaRecorderRef.current && isRecording) {
-      clearInterval(timerRef.current);
-
-      mediaRecorderRef.current.onstop = async () => {
-        // 🚨 THE FIX: Automatically detect what format the device supports (PC = webm, Mobile/iOS = mp4/m4a)
-        const mimeType = mediaRecorderRef.current.mimeType || 'audio/webm';
-        const newAudioBlob = new Blob(audioChunksRef.current, { type: mimeType });
-        
-        // 🚨 Set the correct file extension so Cloudinary doesn't get confused
-        let fileExtension = 'webm';
-        if (mimeType.includes('mp4') || mimeType.includes('m4a') || mimeType.includes('aac')) {
-          fileExtension = 'm4a';
-        }
-        
-        if (streamRef.current) {
-          streamRef.current.getTracks().forEach(track => track.stop());
-        }
-
-        setIsRecording(false);
-        setRecordingDuration(0);
-
-        try {
-          const formData = new FormData();
-          formData.append('receiverId', selectedContact._id);
-          // Attach the file with the device-correct extension
-          formData.append('audio', newAudioBlob, `voicenote.${fileExtension}`); 
-
-          const res = await axios.post('https://talexajobs.onrender.com/api/messages/send', formData, {
-            headers: { token: token, Authorization: "Bearer " + token, 'Content-Type': 'multipart/form-data'}
-          });
-
-          if (res.data.success) {
-            setMessages(prev => {
-              if (prev.some(m => m._id === res.data.message._id)) return prev;
-              return [...prev, res.data.message];
-            });
-            fetchInbox();
-          }
-        } catch (error) {
-          console.error("Audio send error:", error.response?.data || error.message);
-          toast.error("Failed to send voice note.");
-        }
-      };
-      
-      mediaRecorderRef.current.stop(); 
-    }
   };
 
   const handleImageSelect = (e) => {
@@ -350,16 +231,6 @@ function Message() {
       clearAttachments();
       setSelectedImage(file);
       setImagePreview(URL.createObjectURL(file));
-      setShowAttachMenu(false);
-    }
-  };
-
-  const handleAudioSelect = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      clearAttachments();
-      setAudioBlob(file);
-      setAudioPreviewUrl(URL.createObjectURL(file));
       setShowAttachMenu(false);
     }
   };
@@ -396,7 +267,7 @@ function Message() {
       toast.success("Message deleted");
     } catch (error) {
       console.error(error);
-      toast.error("Failed to delete message. Backend route might be missing.");
+      toast.error("Failed to delete message.");
     }
   };
 
@@ -406,7 +277,6 @@ function Message() {
     let okToSend = false;
     if (newMessage.trim() !== '') okToSend = true;
     if (selectedImage !== null) okToSend = true;
-    if (audioBlob !== null) okToSend = true; 
     
     if (!okToSend) return;
     if (!selectedContact) return;
@@ -425,14 +295,13 @@ function Message() {
         }
       } catch (error) {
         console.error(error);
-        toast.error("Failed to edit. Backend route might be missing.");
+        toast.error("Failed to edit.");
       }
       return;
     }
 
     const cachedText = newMessage;
     const cachedImage = selectedImage;
-    const cachedAudio = audioBlob;
 
     setNewMessage('');
     if (textareaRef.current) textareaRef.current.style.height = '24px'; 
@@ -443,14 +312,12 @@ function Message() {
       formData.append('receiverId', selectedContact._id);
       if (cachedText.trim() !== '') formData.append('text', cachedText);
       if (cachedImage !== null) formData.append('image', cachedImage);
-      if (cachedAudio !== null) formData.append('audio', cachedAudio, 'attached_audio.mp3');
 
       const res = await axios.post('https://talexajobs.onrender.com/api/messages/send', formData, {
         headers: { token: token, Authorization: "Bearer " + token, 'Content-Type': 'multipart/form-data'}
       });
       
       if (res.data.success) {
-        // 🚨 PREVENT DUPLICATES ON SEND
         setMessages(prev => {
           if (prev.some(m => m._id === res.data.message._id)) return prev;
           return [...prev, res.data.message];
@@ -459,7 +326,7 @@ function Message() {
       }
     } catch (error) {
       console.error("Send Error:", error.response?.data || error.message);
-      toast.error(error.response?.data?.message || "Failed to send file.");
+      toast.error(error.response?.data?.message || "Failed to send message.");
     }
   };
 
@@ -518,7 +385,6 @@ function Message() {
   let hasContentToSend = false;
   if (newMessage.trim() !== '') hasContentToSend = true;
   if (selectedImage !== null) hasContentToSend = true;
-  if (audioBlob !== null) hasContentToSend = true;
 
   return (
     <div className="bg-[#f0f2f5] py-0 sm:py-6 font-sans flex justify-center overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
@@ -527,7 +393,7 @@ function Message() {
           
           {/* SIDEBAR */}
           <div className={"w-full md:w-1/3 border-r border-slate-200 flex flex-col h-full bg-white " + (selectedContact ? "hidden md:flex" : "flex")}>
-            <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+          <div className="p-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
               <h2 className="font-extrabold text-slate-800 text-xl tracking-tight">Chats</h2>
             </div>
             
@@ -586,7 +452,7 @@ function Message() {
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
                     </button>
                     <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500 overflow-hidden flex-shrink-0">
-                       {getAvatarSrc(selectedContact) ? <img src={getAvatarSrc(selectedContact)} alt="avatar" className="h-full w-full object-cover" /> : getAvatarFallback(selectedContact)}
+                      {getAvatarSrc(selectedContact) ? <img src={getAvatarSrc(selectedContact)} alt="avatar" className="h-full w-full object-cover" /> : getAvatarFallback(selectedContact)}
                     </div>
                     <div className="overflow-hidden">
                       <p className="font-bold text-slate-800 text-[15px] truncate leading-tight">{getDisplayName(selectedContact)}</p>
@@ -650,14 +516,14 @@ function Message() {
                           <div className={bubbleClass}>
                             
                             {isMe && (
-                              <button onClick={() => setActiveBubbleMenu(activeBubbleMenu === msg._id ? null : msg._id)} className="absolute top-1 right-1 text-blue-200 hover:text-white opacity-0 hover:opacity-100 group-hover:opacity-100 transition z-10">
+                              <button onClick={() => setActiveBubbleMenu(activeBubbleMenu === msg._id ? null : msg._id)} className="absolute top-1 right-1 text-blue-200 hover:text-white transition z-10 p-1">
                                 <IconChevronDown />
                               </button>
                             )}
                             
                             {activeBubbleMenu === msg._id && isMe && (
                               <div className="absolute top-6 right-2 bg-white shadow-lg rounded-lg border border-slate-100 py-1 z-40 text-[14px] w-28 overflow-hidden">
-                                 {msg.text && !msg.audioUrl && !msg.imageUrl && (
+                                 {msg.text && !msg.imageUrl && !msg.audioUrl && (
                                    <button onClick={() => startEditing(msg)} className="w-full text-left px-4 py-2 text-slate-700 hover:bg-slate-50 transition">Edit</button>
                                  )}
                                  <button onClick={() => handleDeleteIndividualMsg(msg._id)} className="w-full text-left px-4 py-2 text-rose-600 hover:bg-rose-50 transition">Delete</button>
@@ -687,8 +553,12 @@ function Message() {
                             <div className="absolute bottom-1 right-2 flex items-center gap-1">
                                <span className={"text-[10px] font-medium " + (isMe ? "text-blue-100 opacity-90" : "text-slate-400")}>{timeStr}</span>
                                {isMe && (
-                                 <svg viewBox="0 0 16 15" width="14" height="13" className="text-blue-200"><path fill="currentColor" d="M15.01 3.316l-.478-.372a.365.365 0 00-.51.063L8.666 9.879a.32.32 0 01-.484.033l-.358-.325a.319.319 0 00-.484.032l-.378.483a.418.418 0 00.036.541l1.32 1.266c.143.14.361.125.484-.033l6.272-8.048a.366.366 0 00-.064-.512zm-4.1 0l-.478-.372a.365.365 0 00-.51.063L4.566 9.879a.32.32 0 01-.484.033L1.891 7.769a.366.366 0 00-.515.006l-.423.433a.364.364 0 00.006.514l3.258 3.185c.143.14.361.125.484-.033l6.272-8.048a.365.365 0 00-.063-.51z"></path></svg>
-                                 )}
+                                 msg.isRead ? (
+                                   <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M2 12l5 5L16 6M8 12l5 5L22 6"/></svg>
+                                 ) : (
+                                   <svg viewBox="0 0 18 18" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-200"><path d="M4 9l3 3 7-7"/></svg>
+                                 )
+                               )}
                             </div>
 
                           </div>
@@ -715,61 +585,42 @@ function Message() {
 
                   <form onSubmit={handleSendMessage} className="flex items-end gap-2 w-full max-w-5xl mx-auto relative">
                     
-                    {!isRecording && (
-                      <>
-                        <div className="relative flex-shrink-0 pb-1">
-                          <button type="button" onClick={() => setShowAttachMenu(!showAttachMenu)} className={"p-2 rounded-full transition " + (showAttachMenu ? "bg-slate-100 text-slate-800" : "text-slate-500 hover:bg-slate-100")}>
-                            <IconPlus />
-                          </button>
+                    <>
+                      <div className="relative flex-shrink-0 pb-1">
+                        <button type="button" onClick={() => setShowAttachMenu(!showAttachMenu)} className={"p-2 rounded-full transition " + (showAttachMenu ? "bg-slate-100 text-slate-800" : "text-slate-500 hover:bg-slate-100")}>
+                          <IconPlus />
+                        </button>
 
-                          {showAttachMenu && (
-                            <div className="absolute bottom-12 left-0 w-44 bg-white rounded-xl shadow-xl py-2 border border-slate-100 z-50 flex flex-col transform origin-bottom-left transition-all">
-                              <label className="flex items-center gap-3 px-4 py-2 hover:bg-slate-50 cursor-pointer transition">
-                                <span className="text-blue-500"><IconPhoto /></span> <span className="font-medium text-[15px] text-slate-700">Photos</span>
-                                <input type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
-                              </label>
-                              <label className="flex items-center gap-3 px-4 py-2 hover:bg-slate-50 cursor-pointer transition">
-                                <span className="text-purple-500"><IconFile /></span> <span className="font-medium text-[15px] text-slate-700">Document</span>
-                                <input type="file" accept="audio/*" className="hidden" onChange={handleAudioSelect} />
-                              </label>
-                            </div>
-                          )}
-                        </div>
-
-                        <div className={"flex-1 bg-slate-100 rounded-xl px-4 py-2 relative overflow-hidden flex items-center min-h-[44px] " + (editingMessage ? "rounded-tl-none border border-slate-200" : "")}>
-                          {imagePreview && (
-                            <div className="absolute left-2 top-2 h-8 w-8 rounded overflow-hidden">
-                               <img src={imagePreview} className="w-full h-full object-cover" alt="preview" />
-                               <button type="button" onClick={clearAttachments} className="absolute inset-0 bg-black/40 flex items-center justify-center text-white"><IconClose /></button>
-                            </div>
-                          )}
-                          <textarea 
-                            ref={textareaRef} 
-                            rows="1" 
-                            placeholder="Type a message" 
-                            value={newMessage} 
-                            onChange={handleTextChange} 
-                            onFocus={() => setShowAttachMenu(false)}
-                            className={"w-full bg-transparent border-none focus:outline-none text-[15px] text-slate-800 placeholder-slate-500 resize-none " + (imagePreview ? "pl-10" : "")} 
-                            style={{ height: '24px', minHeight: '24px', maxHeight: '100px' }} 
-                          />
-                        </div>
-                      </>
-                    )}
-
-                    {isRecording && (
-                      <div className="flex-1 flex items-center justify-between bg-slate-50 border border-slate-200 rounded-full px-5 py-2 h-[44px] mb-0.5">
-                         <button type="button" onClick={cancelRecording} className="text-slate-400 hover:text-rose-500 transition focus:outline-none">
-                           <IconTrash />
-                         </button>
-                         <div className="flex items-center gap-2">
-                           <div className="h-2.5 w-2.5 rounded-full bg-rose-500 animate-pulse"></div>
-                           <span className="font-medium text-[15px] text-slate-700 font-mono tracking-wider">{formatTime(recordingDuration)}</span>
-                         </div>
-                         <div className="w-5"></div> 
+                        {showAttachMenu && (
+                          <div className="absolute bottom-12 left-0 w-44 bg-white rounded-xl shadow-xl py-2 border border-slate-100 z-50 flex flex-col transform origin-bottom-left transition-all">
+                            <label className="flex items-center gap-3 px-4 py-2 hover:bg-slate-50 cursor-pointer transition">
+                              <span className="text-blue-500"><IconPhoto /></span> <span className="font-medium text-[15px] text-slate-700">Photos</span>
+                              <input type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
+                            </label>
+                          </div>
+                        )}
                       </div>
-                    )}
-                    
+
+                      <div className={"flex-1 bg-slate-100 rounded-xl px-4 py-2 relative overflow-hidden flex items-center min-h-[44px] " + (editingMessage ? "rounded-tl-none border border-slate-200" : "")}>
+                        {imagePreview && (
+                          <div className="absolute left-2 top-2 h-8 w-8 rounded overflow-hidden">
+                             <img src={imagePreview} className="w-full h-full object-cover" alt="preview" />
+                             <button type="button" onClick={clearAttachments} className="absolute inset-0 bg-black/40 flex items-center justify-center text-white"><IconClose /></button>
+                          </div>
+                        )}
+                        <textarea 
+                          ref={textareaRef} 
+                          rows="1" 
+                          placeholder="Type a message" 
+                          value={newMessage} 
+                          onChange={handleTextChange} 
+                          onFocus={() => setShowAttachMenu(false)}
+                          className={"w-full bg-transparent border-none focus:outline-none text-[15px] text-slate-800 placeholder-slate-500 resize-none " + (imagePreview ? "pl-10" : "")} 
+                          style={{ height: '24px', minHeight: '24px', maxHeight: '100px' }} 
+                        />
+                      </div>
+                    </>
+
                     <div className="flex-shrink-0 pb-0.5">
                       {hasContentToSend ? (
                         <button type="submit" className="h-[44px] w-[44px] bg-blue-600 hover:bg-blue-700 text-white rounded-full flex items-center justify-center shadow-sm focus:outline-none transition-colors">
@@ -793,5 +644,4 @@ function Message() {
     </div>
   );
 }
-
 export default Message;
