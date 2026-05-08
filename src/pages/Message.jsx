@@ -300,7 +300,15 @@ function Message() {
       clearInterval(timerRef.current);
 
       mediaRecorderRef.current.onstop = async () => {
-        const newAudioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        // 🚨 THE FIX: Automatically detect what format the device supports (PC = webm, Mobile/iOS = mp4/m4a)
+        const mimeType = mediaRecorderRef.current.mimeType || 'audio/webm';
+        const newAudioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        
+        // 🚨 Set the correct file extension so Cloudinary doesn't get confused
+        let fileExtension = 'webm';
+        if (mimeType.includes('mp4')  mimeType.includes('m4a')  mimeType.includes('aac')) {
+          fileExtension = 'm4a';
+        }
         
         if (streamRef.current) {
           streamRef.current.getTracks().forEach(track => track.stop());
@@ -312,14 +320,14 @@ function Message() {
         try {
           const formData = new FormData();
           formData.append('receiverId', selectedContact._id);
-          formData.append('audio', newAudioBlob, 'voicenote.webm'); 
+          // Attach the file with the device-correct extension
+          formData.append('audio', newAudioBlob, `voicenote.${fileExtension}`); 
 
           const res = await axios.post('https://talexajobs.onrender.com/api/messages/send', formData, {
             headers: { token: token, Authorization: "Bearer " + token, 'Content-Type': 'multipart/form-data'}
           });
 
           if (res.data.success) {
-            // 🚨 PREVENT DUPLICATES ON SEND
             setMessages(prev => {
               if (prev.some(m => m._id === res.data.message._id)) return prev;
               return [...prev, res.data.message];
