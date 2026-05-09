@@ -97,6 +97,23 @@ function Message() {
   
   // Dynamic Block State
   const [isBlocked, setIsBlocked] = useState(false);
+  
+  // 🚨 LIVE TRACKER MATH
+  const formatLastSeen = (dateString) => {
+    if (!dateString) { return "Offline"; }
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInSeconds = Math.floor((now - date) / 1000);
+
+    if (diffInSeconds < 60) { return "Active just now"; }
+    const diffInMinutes = Math.floor(diffInSeconds / 60);
+    if (diffInMinutes < 60) { return "Active " + diffInMinutes + "m ago"; }
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    if (diffInHours < 24) { return "Active " + diffInHours + "h ago"; }
+    const diffInDays = Math.floor(diffInHours / 24);
+    if (diffInDays === 1) { return "Active yesterday"; }
+    return "Active " + diffInDays + "d ago";
+  };
 
   const chatContainerRef = useRef(null);
   const textareaRef = useRef(null); 
@@ -107,9 +124,9 @@ function Message() {
   if (token) {
     try {
       const decoded = JSON.parse(atob(token.split('.')[1]));
-      if (decoded.id) myId = decoded.id;
-      else if (decoded._id) myId = decoded._id;
-      else if (decoded.userId) myId = decoded.userId;
+      if (decoded.id) { myId = decoded.id; }
+      else if (decoded._id) { myId = decoded._id; }
+      else if (decoded.userId) { myId = decoded.userId; }
     } catch (e) {
       console.error("Token error", e);
     }
@@ -122,7 +139,9 @@ function Message() {
         headers: { token: token, Authorization: "Bearer " + token }
       });
       if (res.data.success) {
-        const uniqueContacts = res.data.contacts.filter((v,i,a)=>a.findIndex(t=>(t._id===v._id))===i);
+        const uniqueContacts = res.data.contacts.filter(function(v,i,a) {
+           return a.findIndex(function(t) { return t._id === v._id; }) === i;
+        });
         setContacts(uniqueContacts);
       }
     } catch (error) {
@@ -133,20 +152,24 @@ function Message() {
   }, [token]);
 
   useEffect(() => {
-    if (!token) navigate('/login');
-    else fetchInbox();
+    if (!token) { navigate('/login'); }
+    else { fetchInbox(); }
   }, [token, navigate, fetchInbox]);
 
   useEffect(() => {
-    if (location.state && location.state.prefilledContact) {
-      setSelectedContact(location.state.prefilledContact);
-      window.history.replaceState({}, document.title);
+    if (location.state) {
+       if (location.state.prefilledContact) {
+         setSelectedContact(location.state.prefilledContact);
+         window.history.replaceState({}, document.title);
+       }
     }
   }, [location]);
 
   useEffect(() => {
     if (selectedContact) {
-      setIsBlocked(selectedContact.isBlocked || false); 
+      let blockedStatus = false;
+      if (selectedContact.isBlocked) { blockedStatus = true; }
+      setIsBlocked(blockedStatus); 
     }
   }, [selectedContact]);
 
@@ -155,21 +178,22 @@ function Message() {
       const newSocket = io("https://talexajobs.onrender.com", { transports: ['websocket', 'polling'] });
       setSocket(newSocket);
       newSocket.emit("addUser", myId);
-      return () => newSocket.disconnect();
+      return () => { newSocket.disconnect(); };
     }
   }, [myId]);
+
   useEffect(() => {
     if (!socket) return;
     const handleIncomingMessage = (message) => {
       let isCurrentChat = false;
       if (selectedContact) {
-        if (message.sender === selectedContact._id) isCurrentChat = true;
-        if (message.receiver === selectedContact._id) isCurrentChat = true;
+        if (message.sender === selectedContact._id) { isCurrentChat = true; }
+        if (message.receiver === selectedContact._id) { isCurrentChat = true; }
       }
 
       if (isCurrentChat) {
-        setMessages(prev => {
-          if (prev.some(m => m._id === message._id)) return prev;
+        setMessages(function(prev) {
+          if (prev.some(function(m) { return m._id === message._id; })) { return prev; }
           return [...prev, message];
         });
         axios.put('https://talexajobs.onrender.com/api/messages/read/' + selectedContact._id, {}, {
@@ -181,8 +205,29 @@ function Message() {
       }
     };
 
+    // 🚨 LIVE STATUS SOCKET LISTENER
+    const handleStatusUpdate = (data) => {
+      setContacts(function(prev) {
+        return prev.map(function(c) {
+          if (c._id === data.userId) { return { ...c, isOnline: data.isOnline, lastSeen: data.lastSeen }; }
+          return c;
+        });
+      });
+      setSelectedContact(function(prev) {
+        if (prev) {
+          if (prev._id === data.userId) { return { ...prev, isOnline: data.isOnline, lastSeen: data.lastSeen }; }
+        }
+        return prev;
+      });
+    };
+
     socket.on("getMessage", handleIncomingMessage);
-    return () => socket.off("getMessage", handleIncomingMessage);
+    socket.on("userStatusUpdate", handleStatusUpdate);
+    
+    return () => { 
+       socket.off("getMessage", handleIncomingMessage);
+       socket.off("userStatusUpdate", handleStatusUpdate);
+    };
   }, [socket, selectedContact, fetchInbox, token]);
 
   useEffect(() => {
@@ -201,7 +246,9 @@ function Message() {
           headers: { token: token, Authorization: "Bearer " + token }
         });
         if (res.data.success) {
-          const uniqueMsgs = res.data.messages.filter((v,i,a)=>a.findIndex(t=>(t._id===v._id))===i);
+          const uniqueMsgs = res.data.messages.filter(function(v,i,a) {
+             return a.findIndex(function(t) { return t._id === v._id; }) === i;
+          });
           setMessages(uniqueMsgs);
           fetchInbox(); 
         }
@@ -247,13 +294,13 @@ function Message() {
     setEditingMessage(msg);
     setNewMessage(msg.text);
     setActiveBubbleMenu(null);
-    if (textareaRef.current) textareaRef.current.focus();
+    if (textareaRef.current) { textareaRef.current.focus(); }
   };
 
   const cancelEditing = () => {
     setEditingMessage(null);
     setNewMessage('');
-    if (textareaRef.current) textareaRef.current.style.height = '24px';
+    if (textareaRef.current) { textareaRef.current.style.height = '24px'; }
   };
 
   const handleDeleteIndividualMsg = async (msgId) => {
@@ -263,7 +310,7 @@ function Message() {
       await axios.delete('https://talexajobs.onrender.com/api/messages/' + msgId, {
         headers: { token: token, Authorization: "Bearer " + token }
       });
-      setMessages(prev => prev.filter(m => m._id !== msgId));
+      setMessages(function(prev) { return prev.filter(function(m) { return m._id !== msgId; }); });
       toast.success("Message deleted");
     } catch (error) {
       console.error(error);
@@ -275,8 +322,8 @@ function Message() {
     if (e) e.preventDefault();
     
     let okToSend = false;
-    if (newMessage.trim() !== '') okToSend = true;
-    if (selectedImage !== null) okToSend = true;
+    if (newMessage.trim() !== '') { okToSend = true; }
+    if (selectedImage !== null) { okToSend = true; }
     
     if (!okToSend) return;
     if (!selectedContact) return;
@@ -291,7 +338,9 @@ function Message() {
         });
         
         if (res.data.success) {
-          setMessages(prev => prev.map(m => m._id === editingMessage._id ? res.data.message : m));
+          setMessages(function(prev) {
+            return prev.map(function(m) { return m._id === editingMessage._id ? res.data.message : m; });
+          });
         }
       } catch (error) {
         console.error(error);
@@ -304,22 +353,22 @@ function Message() {
     const cachedImage = selectedImage;
 
     setNewMessage('');
-    if (textareaRef.current) textareaRef.current.style.height = '24px'; 
+    if (textareaRef.current) { textareaRef.current.style.height = '24px'; }
     clearAttachments();
 
     try {
       const formData = new FormData();
       formData.append('receiverId', selectedContact._id);
-      if (cachedText.trim() !== '') formData.append('text', cachedText);
-      if (cachedImage !== null) formData.append('image', cachedImage);
+      if (cachedText.trim() !== '') { formData.append('text', cachedText); }
+      if (cachedImage !== null) { formData.append('image', cachedImage); }
 
       const res = await axios.post('https://talexajobs.onrender.com/api/messages/send', formData, {
         headers: { token: token, Authorization: "Bearer " + token, 'Content-Type': 'multipart/form-data'}
       });
       
       if (res.data.success) {
-        setMessages(prev => {
-          if (prev.some(m => m._id === res.data.message._id)) return prev;
+        setMessages(function(prev) {
+          if (prev.some(function(m) { return m._id === res.data.message._id; })) { return prev; }
           return [...prev, res.data.message];
         });
         fetchInbox(); 
@@ -360,31 +409,35 @@ function Message() {
   };
 
   const getDisplayName = (user) => {
-    if (!user) return "Deleted User";
-    if (user.fullName) return user.fullName;
-    if (user.employerInfo && user.employerInfo.companyName) return user.employerInfo.companyName;
+    if (!user) { return "Deleted User"; }
+    if (user.fullName) { return user.fullName; }
+    if (user.employerInfo) {
+       if (user.employerInfo.companyName) { return user.employerInfo.companyName; }
+    }
     return "User";
   };
   const getAvatarFallback = (user) => {
-    if (!user) return "U";
+    if (!user) { return "U"; }
     return getDisplayName(user).charAt(0).toUpperCase();
   };
   const getAvatarSrc = (user) => {
-    if (!user) return null;
+    if (!user) { return null; }
     let url = user.profilePictureUrl;
-    if (!url && user.employerInfo) url = user.employerInfo.logoUrl;
+    if (!url) {
+       if (user.employerInfo) { url = user.employerInfo.logoUrl; }
+    }
     if (url) {
       const cleanPath = url.replace(/\\/g, '/');
-      if (cleanPath.startsWith('http')) return cleanPath;
-      if (cleanPath.startsWith('/')) return "https://talexajobs.onrender.com" + cleanPath;
+      if (cleanPath.startsWith('http')) { return cleanPath; }
+      if (cleanPath.startsWith('/')) { return "https://talexajobs.onrender.com" + cleanPath; }
       return "https://talexajobs.onrender.com/" + cleanPath;
     }
     return null;
   };
 
   let hasContentToSend = false;
-  if (newMessage.trim() !== '') hasContentToSend = true;
-  if (selectedImage !== null) hasContentToSend = true;
+  if (newMessage.trim() !== '') { hasContentToSend = true; }
+  if (selectedImage !== null) { hasContentToSend = true; }
 
   return (
     <div className="bg-[#f0f2f5] py-0 sm:py-6 font-sans flex justify-center overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
@@ -405,26 +458,34 @@ function Message() {
               ) : (
                 contacts.map(function(contact) {
                   let isSelected = false;
-                  if (selectedContact && selectedContact._id === contact._id) isSelected = true;
+                  if (selectedContact) {
+                     if (selectedContact._id === contact._id) { isSelected = true; }
+                  }
                   const avatarSrc = getAvatarSrc(contact);
 
-                  return (
-                    <button key={contact._id} onClick={() => setSelectedContact(contact)} className={"w-full text-left flex items-center gap-3 px-4 py-3 transition border-b border-slate-50 " + (isSelected ? "bg-slate-100" : "hover:bg-slate-50")}>
-                      <div className="h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500 flex-shrink-0 overflow-hidden">
+                 return (
+                  <button key={contact._id} onClick={() => setSelectedContact(contact)} className={"w-full text-left flex items-center gap-3 px-4 py-3 transition border-b border-slate-50 " + (isSelected ? "bg-slate-100" : "hover:bg-slate-50")}>
+                    
+                    {/* 🚨 SIDEBAR GREEN DOT */}
+                    <div className="relative h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500 flex-shrink-0">
+                      <div className="overflow-hidden h-full w-full rounded-full">
                         {avatarSrc ? <img src={avatarSrc} alt="avatar" className="h-full w-full object-cover" /> : getAvatarFallback(contact)}
                       </div>
-                      <div className="overflow-hidden flex-1">
-                        <div className="flex justify-between items-baseline mb-0.5">
-                           <p className="font-bold text-slate-900 truncate text-[15px]">{getDisplayName(contact)}</p>
-                        </div>
-                        <p className="text-[12px] text-slate-500 truncate">{contact.role === 'employer' ? 'Employer' : 'Candidate'}</p>
+                      {contact.isOnline ? <span className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-500 border-2 border-white rounded-full"></span> : null}
+                    </div>
+
+                    <div className="overflow-hidden flex-1">
+                      <div className="flex justify-between items-baseline mb-0.5">
+                         <p className="font-bold text-slate-900 truncate text-[15px]">{getDisplayName(contact)}</p>
                       </div>
-                      
-                      {contact.unreadCount > 0 && (
+                      <p className="text-[12px] text-slate-500 truncate">{contact.role === 'employer' ? 'Employer' : 'Candidate'}</p>
+                    </div>
+                    
+                      {contact.unreadCount > 0 ? (
                         <div className="bg-blue-600 text-white text-[10px] font-bold h-5 w-5 flex items-center justify-center rounded-full flex-shrink-0 shadow-sm">
                           {contact.unreadCount}
                         </div>
-                      )}
+                      ) : null}
                     </button>
                   );
                 })
@@ -445,18 +506,27 @@ function Message() {
               </div>
             ) : (
               <>
-                {/* CHAT HEADER */}
+                {/* 🚨 CHAT HEADER WITH LIVE TRACKING TEXT */}
                 <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center justify-between relative z-30 w-full shadow-sm">
-                    <div className="flex items-center gap-3 overflow-hidden cursor-pointer">
+                  <div className="flex items-center gap-3 overflow-hidden cursor-pointer">
                     <button onClick={() => setSelectedContact(null)} className="md:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-full transition flex-shrink-0 mr-1">
                       <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
                     </button>
                     <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500 overflow-hidden flex-shrink-0">
-                      {getAvatarSrc(selectedContact) ? <img src={getAvatarSrc(selectedContact)} alt="avatar" className="h-full w-full object-cover" /> : getAvatarFallback(selectedContact)}
+                       {getAvatarSrc(selectedContact) ? <img src={getAvatarSrc(selectedContact)} alt="avatar" className="h-full w-full object-cover" /> : getAvatarFallback(selectedContact)}
                     </div>
                     <div className="overflow-hidden">
-                      <p className="font-bold text-slate-800 text-[15px] truncate leading-tight">{getDisplayName(selectedContact)}</p>
-                      <Link to={selectedContact.role === 'employer' ? "/employer/" + selectedContact._id : "/candidate/" + selectedContact._id} className="text-[12px] text-blue-600 hover:text-blue-800 transition font-bold block truncate">Tap to view profile</Link>
+                      <div className="flex items-center gap-1.5 mb-0.5">
+                        <p className="font-bold text-slate-800 text-[15px] truncate leading-tight">{getDisplayName(selectedContact)}</p>
+                        {selectedContact.isOnline ? <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm"></span> : null}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <p className={"text-[11.5px] font-medium " + (selectedContact.isOnline ? "text-green-600" : "text-slate-500")}>
+                          {selectedContact.isOnline ? "Online now" : formatLastSeen(selectedContact.lastSeen)}
+                        </p>
+                        <span className="text-slate-300 text-[10px]">•</span>
+                        <Link to={selectedContact.role === 'employer' ? "/employer/" + selectedContact._id : "/candidate/" + selectedContact._id} className="text-[11px] text-blue-600 hover:text-blue-800 transition font-bold block truncate">View profile</Link>
+                      </div>
                     </div>
                   </div>
                   
@@ -465,7 +535,7 @@ function Message() {
                       <IconMenu />
                     </button>
 
-                    {showMenu && (
+                    {showMenu ? (
                       <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-[60] border border-slate-100">
                         <button onClick={handleToggleBlockUser} className="w-full text-left px-4 py-2.5 text-[15px] hover:bg-slate-50 transition flex items-center gap-3">
                           {isBlocked ? (
@@ -485,7 +555,7 @@ function Message() {
                           <span className="text-slate-500"><IconDelete /></span> <span className="font-medium">Delete Chat</span>
                         </button>
                       </div>
-                    )}
+                    ) : null}
                   </div>
                 </div>
 
@@ -501,7 +571,8 @@ function Message() {
                     </div>
                   ) : (
                     messages.map(function(msg) {
-                      let isMe = msg.sender === myId;
+                      let isMe = false;
+                      if (msg.sender === myId) { isMe = true; }
                       const timeStr = new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
                       
                       let bubbleClass = "w-fit max-w-[85%] sm:max-w-[70%] relative flex flex-col px-2 pt-1.5 pb-1 shadow-sm group ";
@@ -515,50 +586,54 @@ function Message() {
                         <div key={msg._id} className="flex w-full mb-1 relative">
                           <div className={bubbleClass}>
                             
-                            {isMe && (
+                            {isMe ? (
                               <button onClick={() => setActiveBubbleMenu(activeBubbleMenu === msg._id ? null : msg._id)} className="absolute top-1 right-1 text-blue-200 hover:text-white transition z-10 p-1">
                                 <IconChevronDown />
                               </button>
-                            )}
+                            ) : null}
                             
-                            {activeBubbleMenu === msg._id && isMe && (
-                              <div className="absolute top-6 right-2 bg-white shadow-lg rounded-lg border border-slate-100 py-1 z-40 text-[14px] w-28 overflow-hidden">
-                                 {msg.text && !msg.imageUrl && !msg.audioUrl && (
-                                   <button onClick={() => startEditing(msg)} className="w-full text-left px-4 py-2 text-slate-700 hover:bg-slate-50 transition">Edit</button>
-                                 )}
-                                 <button onClick={() => handleDeleteIndividualMsg(msg._id)} className="w-full text-left px-4 py-2 text-rose-600 hover:bg-rose-50 transition">Delete</button>
-                              </div>
-                            )}
+                            {activeBubbleMenu === msg._id ? (
+                               isMe ? (
+                                <div className="absolute top-6 right-2 bg-white shadow-lg rounded-lg border border-slate-100 py-1 z-40 text-[14px] w-28 overflow-hidden">
+                                   {msg.text ? (
+                                     msg.imageUrl ? null : (
+                                       <button onClick={() => startEditing(msg)} className="w-full text-left px-4 py-2 text-slate-700 hover:bg-slate-50 transition">Edit</button>
+                                     )
+                                     ) : null}
+                                   <button onClick={() => handleDeleteIndividualMsg(msg._id)} className="w-full text-left px-4 py-2 text-rose-600 hover:bg-rose-50 transition">Delete</button>
+                                </div>
+                               ) : null
+                            ) : null}
                             
-                            {msg.imageUrl && (
+                            {msg.imageUrl ? (
                               <a href={msg.imageUrl} target="_blank" rel="noopener noreferrer" className="block mb-1 px-1 pt-1" title="Click to enlarge">
                                 <img src={msg.imageUrl} alt="attachment" className="rounded-md w-full max-w-[240px] shadow-sm object-cover" />
                               </a>
-                            )}
+                            ) : null}
                             
-                            {msg.audioUrl && (
+                            {msg.audioUrl ? (
                                <div className="px-1 pt-1 pb-2 pr-4">
                                  <CustomAudioPlayer audioUrl={msg.audioUrl} isMe={isMe} />
                                </div>
-                            )}
+                            ) : null}
 
-                            {msg.text && (
+                            {msg.text ? (
                                <div className="flex items-end flex-wrap gap-2 px-1.5">
                                  <span className="text-[14.5px] leading-relaxed pb-3 pr-4 min-w-[50px]" style={{ wordBreak: 'break-word', whiteSpace: 'pre-wrap' }}>
                                    {msg.text}
                                  </span>
                                </div>
-                            )}
+                            ) : null}
 
                             <div className="absolute bottom-1 right-2 flex items-center gap-1">
                                <span className={"text-[10px] font-medium " + (isMe ? "text-blue-100 opacity-90" : "text-slate-400")}>{timeStr}</span>
-                               {isMe && (
+                               {isMe ? (
                                  msg.isRead ? (
                                    <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-white"><path d="M2 12l5 5L16 6M8 12l5 5L22 6"/></svg>
                                  ) : (
                                    <svg viewBox="0 0 18 18" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="text-blue-200"><path d="M4 9l3 3 7-7"/></svg>
                                  )
-                               )}
+                               ) : null}
                             </div>
 
                           </div>
@@ -571,7 +646,7 @@ function Message() {
                 {/* INPUT AREA */}
                 <div className="px-4 py-3 bg-white border-t border-slate-200 z-30 w-full relative">
                   
-                  {editingMessage && (
+                  {editingMessage ? (
                     <div className="absolute -top-10 left-4 right-4 bg-slate-100 border border-slate-200 border-b-0 rounded-t-xl px-4 py-2 flex items-center justify-between shadow-sm">
                       <div className="flex flex-col">
                         <span className="text-[12px] font-bold text-blue-600">Editing message</span>
@@ -581,7 +656,7 @@ function Message() {
                         <IconClose />
                       </button>
                     </div>
-                  )}
+                  ) : null}
 
                   <form onSubmit={handleSendMessage} className="flex items-end gap-2 w-full max-w-5xl mx-auto relative">
                     
@@ -591,23 +666,23 @@ function Message() {
                           <IconPlus />
                         </button>
 
-                        {showAttachMenu && (
+                        {showAttachMenu ? (
                           <div className="absolute bottom-12 left-0 w-44 bg-white rounded-xl shadow-xl py-2 border border-slate-100 z-50 flex flex-col transform origin-bottom-left transition-all">
                             <label className="flex items-center gap-3 px-4 py-2 hover:bg-slate-50 cursor-pointer transition">
                               <span className="text-blue-500"><IconPhoto /></span> <span className="font-medium text-[15px] text-slate-700">Photos</span>
                               <input type="file" accept="image/*" className="hidden" onChange={handleImageSelect} />
                             </label>
                           </div>
-                        )}
+                        ) : null}
                       </div>
 
                       <div className={"flex-1 bg-slate-100 rounded-xl px-4 py-2 relative overflow-hidden flex items-center min-h-[44px] " + (editingMessage ? "rounded-tl-none border border-slate-200" : "")}>
-                        {imagePreview && (
+                        {imagePreview ? (
                           <div className="absolute left-2 top-2 h-8 w-8 rounded overflow-hidden">
                              <img src={imagePreview} className="w-full h-full object-cover" alt="preview" />
                              <button type="button" onClick={clearAttachments} className="absolute inset-0 bg-black/40 flex items-center justify-center text-white"><IconClose /></button>
                           </div>
-                        )}
+                        ) : null}
                         <textarea 
                           ref={textareaRef} 
                           rows="1" 
@@ -644,4 +719,5 @@ function Message() {
     </div>
   );
 }
+
 export default Message;
