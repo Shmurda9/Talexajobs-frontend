@@ -239,7 +239,6 @@ function Navbar() {
           <div className="flex justify-between h-[72px] items-center">
             
             <Link to="/" className="flex items-center gap-2 flex-shrink-0 max-w-[50%] group">
-              {/* FIXED LOGO LAYOUT - RESTORED TO YOUR ORIGINAL */}
               <img 
                 src="/logo.png" 
                 alt="" 
@@ -264,6 +263,9 @@ function Navbar() {
                   <>
                     <Link to="/" className={"text-sm font-bold transition-all " + (isActive('/') ? "text-white border-b-2 border-white pb-1" : "text-blue-100 hover:text-white")}>Home</Link>
                     <Link to="/jobs" className={"text-sm font-bold transition-all " + (isActive('/jobs') ? "text-white border-b-2 border-white pb-1" : "text-blue-100 hover:text-white")}>Find Jobs</Link>
+                    
+                    {/* 🚨 NEW: ABOUT US LINK FOR EVERYONE */}
+                    <Link to="/about" className={"text-sm font-bold transition-all " + (isActive('/about') ? "text-white border-b-2 border-white pb-1" : "text-blue-100 hover:text-white")}>About Us</Link>
                     
                     {userRole === 'employer' && (
                       <>
@@ -316,14 +318,14 @@ function Navbar() {
                   </div>
                 ) : (
                   <div className="flex items-center gap-3 bg-blue-800 pr-3 pl-1 py-1 rounded-full">
-                    <Link to={userRole === 'admin' ? "/admin" : "/my-profile"} className="h-8 w-8 rounded-full border border-blue-600 overflow-hidden bg-blue-900 flex items-center justify-center hover:border-white transition cursor-pointer">
+                    {/* 🚨 UPDATED: Profile pic now goes to SETTINGS instead of "my-profile" */}
+                    <Link to={userRole === 'admin' ? "/admin" : "/settings"} title="Account Settings" className="h-8 w-8 rounded-full border border-blue-600 overflow-hidden bg-blue-900 flex items-center justify-center hover:border-white transition cursor-pointer">
                       {userRole !== 'admin' && getProfilePicUrl() ? (
                         <img src={getProfilePicUrl()} alt="Profile" className="h-full w-full object-cover" />
                       ) : (
                         <span className="font-bold text-blue-100 text-xs">{getAvatarFallback()}</span>
                       )}
                     </Link>
-                    {/* ONLY FIX: Added min-w-0 to safely truncate the name/email without layout breaks */}
                     <div className="flex flex-col justify-center min-w-0 max-w-[100px]">
                       <span className="text-[11px] font-bold text-white truncate block">{userData ? userData.fullName.split(' ')[0] : 'User'}</span>
                     </div>
@@ -367,14 +369,14 @@ function Navbar() {
               {token && userData && (
                 <div className="flex items-center justify-between px-3 py-4 mb-4 border-b border-blue-700">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="h-10 w-10 shrink-0 rounded-full border border-blue-500 overflow-hidden bg-blue-900 flex items-center justify-center">
+                    {/* 🚨 UPDATED: Mobile profile pic goes to SETTINGS */}
+                    <Link to={userRole === 'admin' ? "/admin" : "/settings"} className="h-10 w-10 shrink-0 rounded-full border border-blue-500 overflow-hidden bg-blue-900 flex items-center justify-center">
                       {userRole !== 'admin' && getProfilePicUrl() ? (
                         <img src={getProfilePicUrl()} alt="Profile" className="h-full w-full object-cover" />
                       ) : (
                         <span className="font-bold text-white text-sm">{getAvatarFallback()}</span>
                       )}
-                    </div>
-                    {/* ONLY FIX: Added min-w-0 to safely truncate the name/email in mobile view */}
+                    </Link>
                     <div className="min-w-0 pr-2">
                       <p className="font-bold text-white text-sm truncate block">{userData.fullName}</p>
                       <p className="text-[10px] text-blue-200 font-extrabold mt-0.5 uppercase tracking-wider">{userRole}</p>
@@ -385,7 +387,6 @@ function Navbar() {
                   </button>
                 </div>
               )}
-
               {userRole === 'admin' ? (
                 <>
                   <Link to="/admin" className="block px-4 py-3 rounded-xl text-sm font-bold text-white hover:bg-blue-700">Command Center</Link>
@@ -393,9 +394,12 @@ function Navbar() {
                 </>
                 ) : (
                 <>
-                <Link to="/" className={"block px-4 py-3 rounded-xl text-sm font-bold " + (isActive('/') ? "bg-blue-900 text-white" : "text-blue-100 hover:bg-blue-700 hover:text-white")}>Home</Link>
+                  <Link to="/" className={"block px-4 py-3 rounded-xl text-sm font-bold " + (isActive('/') ? "bg-blue-900 text-white" : "text-blue-100 hover:bg-blue-700 hover:text-white")}>Home</Link>
                   <Link to="/jobs" className={"block px-4 py-3 rounded-xl text-sm font-bold " + (isActive('/jobs') ? "bg-blue-900 text-white" : "text-blue-100 hover:bg-blue-700 hover:text-white")}>Find Jobs</Link>
                   
+                  {/* 🚨 NEW: ABOUT US LINK FOR MOBILE */}
+                  <Link to="/about" className={"block px-4 py-3 rounded-xl text-sm font-bold " + (isActive('/about') ? "bg-blue-900 text-white" : "text-blue-100 hover:bg-blue-700 hover:text-white")}>About Us</Link>
+
                   {userRole === 'employer' && (
                     <>
                       <Link to="/employer-dashboard" className={"block px-4 py-3 rounded-xl text-sm font-bold " + (isActive('/employer-dashboard') ? "bg-blue-900 text-white" : "text-blue-100 hover:bg-blue-700 hover:text-white")}>My Jobs</Link>
@@ -412,15 +416,24 @@ function Navbar() {
                   )}
 
                   {token && (
-                    <Link to="/messages" className={"block px-4 py-3 rounded-xl text-sm font-bold flex items-center justify-between " + (isActive('/messages') ? "bg-blue-900 text-white" : "text-blue-100 hover:bg-blue-700 hover:text-white")}>
-                      <div className="flex items-center gap-2">
-                        <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                        Messages
-                      </div>
-                      {hasNewMessage && (
-                        <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">NEW</span>
-                      )}
-                    </Link>
+                    <>
+                      <Link to="/messages" className={"block px-4 py-3 rounded-xl text-sm font-bold flex items-center justify-between " + (isActive('/messages') ? "bg-blue-900 text-white" : "text-blue-100 hover:bg-blue-700 hover:text-white")}>
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                          Messages
+                        </div>
+                        {hasNewMessage && (
+                          <span className="bg-rose-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-full animate-pulse">NEW</span>
+                        )}
+                      </Link>
+                      {/* 🚨 NEW: SETTINGS LINK FOR MOBILE */}
+                      <Link to="/settings" className={"block px-4 py-3 rounded-xl text-sm font-bold flex items-center justify-between " + (isActive('/settings') ? "bg-blue-900 text-white" : "text-blue-100 hover:bg-blue-700 hover:text-white")}>
+                        <div className="flex items-center gap-2">
+                          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                          Account Settings
+                        </div>
+                      </Link>
+                    </>
                   )}
                 </>
               )}
@@ -468,7 +481,7 @@ function Navbar() {
             <div className="p-6 overflow-y-auto flex-1">
               
               <button onClick={resetLanguage} className="w-full mb-6 bg-slate-900 text-white font-bold py-3.5 px-4 rounded-xl hover:bg-slate-800 transition shadow-md flex items-center justify-center gap-2 group">
-                <span className="text-lg">🇺🇸</span> 
+                <span className="text-lg">🇺🇸</span>
                 Restore Original English
               </button>
               

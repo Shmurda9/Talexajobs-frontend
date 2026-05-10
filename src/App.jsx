@@ -28,6 +28,8 @@ import PrivacyPolicy from './pages/PrivacyPolicy';
 // 🚨 RESTORED: Both of your employer pages are now properly imported!
 import EmployerDashboard from './pages/EmployerDashboard';
 import ManageApplicants from './pages/ManageApplicants';
+import Settings from './pages/Settings';
+import About from './pages/About';
 
 function App() {
   return (
@@ -84,6 +86,8 @@ function App() {
             <Route path="/manage-applicants" element={<ManageApplicants />} />
             <Route path="/terms" element={<TermsOfService />} />
             <Route path="/privacy" element={<PrivacyPolicy />} />
+            <Route path="/settings" element={<Settings />} />
+            <Route path="/about" element={<About />} />
           </Routes>
         </div>
         
