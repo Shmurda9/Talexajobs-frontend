@@ -38,28 +38,9 @@ function CandidateProfile() {
     fetchProfile();
   }, [id, token, navigate]);
 
-  const handleMessage = async () => {
-    const initialText = window.prompt("Send a message to " + candidate.fullName + ":");
-    let hasText = false;
-    if (initialText) {
-      if (initialText.trim() !== '') hasText = true;
-    }
-    
-    if (!hasText) return; 
-
-    const loadingToast = toast.loading("Sending message...");
-    try {
-      await axios.post('https://talexajobs.onrender.com/api/messages/send', 
-        { receiverId: candidate._id, text: initialText }, 
-        { headers: { token: token, Authorization: "Bearer " + token } }
-      );
-      toast.dismiss(loadingToast);
-      toast.success("Message sent!");
-      navigate('/messages'); 
-    } catch (error) {
-      toast.dismiss(loadingToast);
-      toast.error("Failed to send message.");
-    }
+  // 🚨 THE FIX: NO MORE WINDOW PROMPT! Instant redirect to chat!
+  const handleMessageRedirect = () => {
+    navigate('/messages', { state: { prefilledContact: candidate } });
   };
 
   const getAvatarSrc = () => {
@@ -112,7 +93,7 @@ function CandidateProfile() {
 
   const cInfo = candidate.candidateInfo ? candidate.candidateInfo : {};
   const avatarUrl = getAvatarSrc();
-  // 🚨 THE FIX: Extracting logic here prevents VS Code JSX syntax errors
+  
   const hasBio = !!cInfo.bio;
   const hasExperience = cInfo.workExperience && cInfo.workExperience.length > 0;
   const hasEducation = cInfo.education && cInfo.education.length > 0;
@@ -160,13 +141,16 @@ function CandidateProfile() {
               </div>
               
               <div className="mt-2 sm:mt-0 w-full sm:w-auto flex-shrink-0 z-10">
+                
+                {/* 🚨 THE UPGRADED MESSAGE BUTTON */}
                 <button 
-                  onClick={handleMessage}
-                  className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-2.5 sm:py-3 rounded-xl font-bold shadow-md transition flex items-center gap-2 w-full sm:w-auto justify-center text-sm sm:text-base"
+                  onClick={handleMessageRedirect} 
+                  className="w-full bg-blue-600 text-white font-extrabold py-3.5 px-8 rounded-xl hover:bg-blue-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                 >
-                  <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" /></svg>
-                  Message
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                  Message {candidate.fullName.split(' ')[0]}
                 </button>
+                
               </div>
             </div>
 
@@ -175,7 +159,6 @@ function CandidateProfile() {
                 <svg className="w-4 h-4 mr-2 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v10a2 2 0 002 2z" /></svg>
                 <span className="font-bold text-xs sm:text-sm truncate">{candidate.email}</span>
               </div>
-              
               {cInfo.location && (
                 <div className="flex items-center text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 w-fit max-w-full">
                   <svg className="w-4 h-4 mr-2 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -216,7 +199,7 @@ function CandidateProfile() {
                       <div className="absolute w-3.5 h-3.5 bg-indigo-500 rounded-full -left-[9px] top-1.5 ring-4 ring-white"></div>
                       <h4 className="font-bold text-slate-900 text-base sm:text-lg">{exp.jobTitle}</h4>
                       <p className="text-sm font-bold text-indigo-600 mb-2">
-                        {exp.companyName} <span className="text-slate-400 font-medium ml-1 sm:ml-2 block sm:inline">• {exp.startDate} - {exp.endDate}</span>
+                        {exp.companyName} <span className="text-slate-400 font-medium ml-1 sm:ml-2 block sm:inline">â¢ {exp.startDate} - {exp.endDate}</span>
                       </p>
                       {exp.description && (
                         <p className="text-sm text-slate-600 leading-relaxed font-medium">{exp.description}</p>

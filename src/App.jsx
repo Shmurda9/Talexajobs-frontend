@@ -30,6 +30,7 @@ import EmployerDashboard from './pages/EmployerDashboard';
 import ManageApplicants from './pages/ManageApplicants';
 import Settings from './pages/Settings';
 import About from './pages/About';
+import ChangePassword from './pages/ChangePassword';
 
 function App() {
   return (
@@ -88,6 +89,7 @@ function App() {
             <Route path="/privacy" element={<PrivacyPolicy />} />
             <Route path="/settings" element={<Settings />} />
             <Route path="/about" element={<About />} />
+            <Route path="/change-password" element={<ChangePassword />} />
           </Routes>
         </div>
         

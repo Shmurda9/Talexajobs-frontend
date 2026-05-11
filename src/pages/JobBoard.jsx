@@ -20,6 +20,11 @@ function JobBoard() {
   const [currentPage, setCurrentPage] = useState(1);
   const JOBS_PER_PAGE = 5; 
 
+  // 🚨 NEW PREMIUM COVER LETTER STATES
+  const [showApplyModal, setShowApplyModal] = useState(false);
+  const [coverLetterText, setCoverLetterText] = useState("");
+  const [applyingJobId, setApplyingJobId] = useState(null);
+
   const token = localStorage.getItem("token");
   const userStr = localStorage.getItem("user");
   
@@ -105,7 +110,8 @@ function JobBoard() {
     }
   };
 
-  const handleApply = async (jobId) => {
+  // 🚨 NEW PREMIUM APPLY INITIATION (NO MORE BLACK BOX)
+  const initiateApply = (jobId) => {
     if (token == null || token == "") {
       toast.error("You must be logged in to apply for jobs.");
       return;
@@ -124,18 +130,25 @@ function JobBoard() {
       }
     }
 
-    const coverLetter = window.prompt("Please provide a brief cover letter or introduction (Optional):");
-    if (coverLetter == null) return;
+    setApplyingJobId(jobId);
+    setCoverLetterText("");
+    setShowApplyModal(true);
+  };
+
+  // 🚨 NEW SUBMIT FUNCTION FOR THE MODAL
+  const submitApplication = async () => {
+    if (!applyingJobId) return;
 
     const loadingToast = toast.loading("Submitting application...");
 
     try {
       await axios.post("https://talexajobs.onrender.com/api/applications/apply", 
-        { jobId: jobId, coverLetter: coverLetter }, 
+        { jobId: applyingJobId, coverLetter: coverLetterText }, 
         { headers: { token: token, Authorization: "Bearer " + token } }
       );
       toast.dismiss(loadingToast);
       toast.success("Application submitted successfully.");
+      setShowApplyModal(false);
       setSelectedJob(null); 
     } catch (error) {
       toast.dismiss(loadingToast);
@@ -166,8 +179,6 @@ function JobBoard() {
       return;
     }
 
-    // 🚨 FIX: Removed window.prompt! Now we instantly teleport to the messages page 
-    // and pass the employer data along so the chat screen can open automatically.
     setSelectedJob(null);
     navigate("/messages", { state: { prefilledContact: job.user } });
   };
@@ -230,7 +241,6 @@ function JobBoard() {
 
     const keywords = headline.split(" ").filter(word => word.length > 3);
     if (keywords.length == 0) return [];
-
     const recommendations = jobs.filter(job => {
       let isApproved = false;
       if (job.adminStatus == "approved") { isApproved = true; }
@@ -323,7 +333,7 @@ function JobBoard() {
         );
       } else {
         actionButton = (
-          <button onClick={() => handleApply(job._id)} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition shadow-md text-xs sm:text-sm text-center">
+          <button onClick={() => initiateApply(job._id)} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2.5 rounded-xl transition shadow-md text-xs sm:text-sm text-center">
             Apply Now
           </button>
         );
@@ -332,11 +342,13 @@ function JobBoard() {
 
     return (
       <div key={uniqueKey} className={cardClass}>
-        {userRole == "admin" && isApproved == false && (
-          <div className="mb-3 sm:mb-4 bg-rose-100 text-rose-800 text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-md inline-block border border-rose-200 tracking-wide uppercase">
-            Hidden: Waiting for Admin Approval
-          </div>
-        )}
+        {userRole == "admin" ? (
+          isApproved == false ? (
+            <div className="mb-3 sm:mb-4 bg-rose-100 text-rose-800 text-[10px] sm:text-xs font-bold px-2.5 py-1 rounded-md inline-block border border-rose-200 tracking-wide uppercase">
+              Hidden: Waiting for Admin Approval
+            </div>
+          ) : null
+        ) : null}
         
         <div className="flex justify-between items-start gap-4 mb-4">
           <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
@@ -356,7 +368,7 @@ function JobBoard() {
           </div>
 
           <div className="flex-shrink-0 pt-1">
-            {isEmployerOrAdmin == false && (
+            {isEmployerOrAdmin == false ? (
               <button onClick={() => handleBookmarkClick(job._id)} className="text-slate-400 hover:text-blue-600 transition" title="Save Job">
                   {isBookmarked == true ? (
                     <span className="text-blue-600 text-xl">★</span>
@@ -364,16 +376,16 @@ function JobBoard() {
                     <span className="text-slate-400 text-xl">☆</span>
                   )}
               </button>
-            )}
+            ) : null}
           </div>
         </div>
         
         <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-3 sm:mb-4">
-          {showRemoteBadge == true && (
+          {showRemoteBadge == true ? (
             <span className="bg-purple-50 text-purple-700 border border-purple-100 px-2 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-xs font-bold whitespace-nowrap">
               Remote / Flexible
             </span>
-          )}
+          ) : null}
           <span className="bg-blue-50 text-blue-700 border border-blue-100 px-2 sm:px-2.5 py-1 rounded-md text-[10px] sm:text-xs font-bold whitespace-nowrap">
             {job.employmentType || "Full-time"}
           </span>
@@ -389,16 +401,20 @@ function JobBoard() {
           {job.description}
         </p>
 
-        {job.skills && job.skills.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-4 sm:mb-5">
-            {job.skills.slice(0, 4).map((skill, idx) => (
-              <span key={idx} className="text-[10px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-md shadow-sm">
-                {skill}
-              </span>
-            ))}
-            {job.skills.length > 4 && <span className="text-[10px] sm:text-xs font-bold text-slate-400 px-1 py-1">+{job.skills.length - 4} more</span>}
-          </div>
-        )}
+        {job.skills ? (
+          job.skills.length > 0 ? (
+            <div className="flex flex-wrap gap-2 mb-4 sm:mb-5">
+              {job.skills.slice(0, 4).map((skill, idx) => (
+                <span key={idx} className="text-[10px] sm:text-xs font-bold text-slate-500 bg-white border border-slate-200 px-2.5 py-1 rounded-md shadow-sm">
+                  {skill}
+                </span>
+              ))}
+              {job.skills.length > 4 ? (
+                 <span className="text-[10px] sm:text-xs font-bold text-slate-400 px-1 py-1">+{job.skills.length - 4} more</span>
+              ) : null}
+            </div>
+          ) : null
+        ) : null}
 
         <div className="flex flex-row gap-2 sm:gap-3 pt-4 border-t border-slate-100">
           <button onClick={() => setSelectedJob(job)} className="flex-1 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 font-bold py-2.5 rounded-xl transition shadow-sm text-xs sm:text-sm text-center">
@@ -447,30 +463,72 @@ function JobBoard() {
                 <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-2">Category</label>
                 <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="block w-full py-2.5 sm:py-3 px-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent transition bg-slate-50 hover:bg-white shadow-sm font-medium">
                   <option value="">All Categories</option>
-                  <option value="IT">IT</option>
-                  <option value="Finance">Finance</option>
+                  
+                  {/* 🚨 THE 42 NEW PREMIUM CATEGORIES (Focused on Accessible/Remote) */}
+                  <option value="Customer Support">Customer Support</option>
+                  <option value="Virtual Assistant">Virtual Assistant</option>
+                  <option value="Data Entry">Data Entry</option>
+                  <option value="Chat Support Agent">Chat Support Agent</option>
+                  <option value="Transcriptionist">Transcriptionist</option>
+                  <option value="Social Media Moderator">Social Media Moderator</option>
+                  <option value="Content Writing">Content Writing & Copywriting</option>
+                  <option value="Online Tutor">Online Tutor</option>
+                  <option value="Call Center Agent">Call Center Agent</option>
+                  <option value="Tech Support">Tech Support</option>
+                  <option value="Dropshipping Assistant">Dropshipping Assistant</option>
+                  <option value="Translation">Translation & Localization</option>
+                  <option value="Community Manager">Community Manager</option>
+                  <option value="QA Testing">QA Testing</option>
+                  <option value="Virtual Receptionist">Virtual Receptionist</option>
+                  <option value="Lead Generation">Lead Generation</option>
+                  <option value="Proofreading">Proofreading & Editing</option>
+                  <option value="Order Processing">Order Processing</option>
+                  <option value="IT Helpdesk">IT Helpdesk</option>
+                  <option value="Telemarketing">Telemarketing</option>
+                  <option value="Search Engine Evaluation">Search Engine Evaluation</option>
+                  <option value="Data Annotation">Data Annotation</option>
+                  <option value="E-commerce Manager">E-commerce Manager</option>
+                  <option value="Graphic Design">Graphic Design</option>
+                  <option value="Web Development">Web Development</option>
+                  <option value="IT">IT & Engineering</option>
+                  <option value="Finance">Finance & Accounting</option>
                   <option value="Healthcare">Healthcare</option>
                   <option value="Education">Education</option>
                   <option value="Construction">Construction</option>
                   <option value="Delivery">Delivery & Logistics</option>
                   <option value="Care Assistance">Care Assistance</option>
                   <option value="Warehouse">Warehouse</option>
+                  <option value="Retail">Retail</option>
+                  <option value="Hospitality">Hospitality & Tourism</option>
+                  <option value="Real Estate">Real Estate</option>
+                  <option value="Legal">Legal</option>
+                  <option value="Marketing">Marketing & PR</option>
+                  <option value="Human Resources">Human Resources</option>
+                  <option value="Sales">Sales & Business Dev</option>
                   <option value="Other">Other</option>
                 </select>
               </div>
               
-              <div className="mb-2 flex items-center bg-slate-50 hover:bg-blue-50 p-3 sm:p-3.5 rounded-xl border border-slate-200 hover:border-blue-200 cursor-pointer transition shadow-sm" onClick={() => {
+              {/* 🚨 PREMIUM REMOTE TOGGLE FIX */}
+              <div 
+                className={"mb-2 flex items-center p-3 sm:p-3.5 rounded-xl border cursor-pointer transition shadow-sm " + (remoteOnly ? "bg-purple-50 border-purple-200" : "bg-slate-50 border-slate-200 hover:border-blue-200 hover:bg-blue-50")} 
+                onClick={() => {
                   if (remoteOnly == true) { setRemoteOnly(false); } else { setRemoteOnly(true); }
-              }}>
-                <input type="checkbox" checked={remoteOnly} readOnly className="h-4 w-4 text-blue-600 rounded border-slate-300 pointer-events-none" />
-                <label className="ml-3 block text-xs sm:text-sm text-slate-800 font-bold pointer-events-none">Remote jobs only</label>
+                }}
+              >
+                <div className={"relative inline-flex h-5 w-9 items-center rounded-full transition-colors " + (remoteOnly ? "bg-purple-600" : "bg-slate-300")}>
+                  <span className={"inline-block h-3 w-3 transform rounded-full bg-white transition-transform " + (remoteOnly ? "translate-x-5" : "translate-x-1")}></span>
+                </div>
+                <label className={"ml-3 block text-xs sm:text-sm font-bold pointer-events-none " + (remoteOnly ? "text-purple-700" : "text-slate-800")}>
+                  Remote jobs only
+                </label>
               </div>
             </div>
           </div>
 
           <div className="w-full lg:w-3/4">
             
-            {showRecommendations == true && (
+            {showRecommendations == true ? (
               <div className="mb-8 bg-white border border-amber-200 rounded-2xl p-5 sm:p-6 shadow-md relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
                 <div className="flex items-center gap-2 mb-4">
@@ -483,7 +541,7 @@ function JobBoard() {
                   {recommendedJobs.map((job) => renderJobCard(job, true))}
                 </div>
               </div>
-            )}
+            ) : null}
 
             <div className="mb-4 flex justify-between items-center text-xs sm:text-sm text-slate-500 font-bold">
               <span>Showing {filteredJobs.length} {filteredJobs.length == 1 ? "Opportunity" : "Opportunities"}</span>
@@ -494,13 +552,13 @@ function JobBoard() {
                 <h3 className="text-base sm:text-lg font-bold text-slate-900 mb-1">No matches found</h3>
                 <p className="text-slate-500 text-xs sm:text-sm">Adjust your filters to discover more opportunities.</p>
               </div>
-            ) : (
+              ) : (
               <div className="grid gap-4 sm:gap-5">
                 {currentJobs.map((job) => renderJobCard(job, false))}
               </div>
             )}
 
-            {totalPages > 1 && (
+            {totalPages > 1 ? (
               <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row items-center justify-between bg-white p-4 sm:p-5 rounded-2xl border border-slate-200 shadow-sm gap-4">
                 <span className="text-xs sm:text-sm font-bold text-slate-500">
                   Page <span className="text-slate-900">{currentPage}</span> of <span className="text-slate-900">{totalPages}</span>
@@ -529,13 +587,14 @@ function JobBoard() {
                   </button>
                 </div>
               </div>
-            )}
+            ) : null}
 
           </div>
         </div>
       </div>
 
-      {selectedJob && (
+      {/* 🚨 EXISTING DETAILS MODAL */}
+      {selectedJob ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-900 bg-opacity-60 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto border border-slate-200 flex flex-col relative">
             <div className="sticky top-0 bg-white px-5 sm:px-6 py-4 border-b border-slate-100 flex justify-between items-start sm:items-center z-10 gap-4">
@@ -550,14 +609,14 @@ function JobBoard() {
             
             <div className="p-5 sm:p-6 space-y-5 sm:space-y-6">
               <div className="flex flex-wrap gap-2">
-                {(selectedJob.isRemote == true || (selectedJob.location && selectedJob.location.toLowerCase().includes("remote"))) && (
+                {(selectedJob.isRemote == true || (selectedJob.location && selectedJob.location.toLowerCase().includes("remote"))) ? (
                   <span className="bg-purple-50 text-purple-700 border border-purple-100 px-3 py-1 rounded-md text-[10px] sm:text-xs font-bold">Remote / Flexible</span>
-                )}
+                  ) : null}
                 <span className="bg-blue-50 text-blue-700 border border-blue-100 px-3 py-1 rounded-md text-[10px] sm:text-xs font-bold">{selectedJob.employmentType || "Full-time"}</span>
                 <span className="bg-slate-50 text-slate-700 border border-slate-200 px-3 py-1 rounded-md text-[10px] sm:text-xs font-bold">{selectedJob.location}</span>
-                {selectedJob.salary && (
+                {selectedJob.salary ? (
                   <span className="bg-emerald-50 text-emerald-700 border border-emerald-100 px-3 py-1 rounded-md text-[10px] sm:text-xs font-bold">${selectedJob.salary.toLocaleString()}</span>
-                )}
+                ) : null}
               </div>
 
               <div>
@@ -565,33 +624,37 @@ function JobBoard() {
                 <p className="text-slate-600 text-xs sm:text-sm whitespace-pre-wrap leading-relaxed">{selectedJob.description}</p>
               </div>
 
-              {selectedJob.responsibilities && selectedJob.responsibilities.length > 0 && (
-                <div>
-                  <h4 className="font-extrabold text-slate-900 mb-2 border-b border-slate-100 pb-2 text-sm sm:text-base">Key Responsibilities</h4>
-                  <ul className="list-disc pl-5 space-y-1 text-slate-600 text-xs sm:text-sm">
-                    {selectedJob.responsibilities.map((resp, i) => <li key={i}>{resp}</li>)}
-                  </ul>
-                </div>
-              )}
-
-              {selectedJob.perks && selectedJob.perks.length > 0 && (
-                <div>
-                  <h4 className="font-extrabold text-slate-900 mb-2 border-b border-slate-100 pb-2 text-sm sm:text-base">Benefits & Perks</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedJob.perks.map((perk, i) => (
-                      <span key={i} className="text-[10px] sm:text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-md flex items-center">
-                        {perk}
-                      </span>
-                    ))}
+              {selectedJob.responsibilities ? (
+                selectedJob.responsibilities.length > 0 ? (
+                  <div>
+                    <h4 className="font-extrabold text-slate-900 mb-2 border-b border-slate-100 pb-2 text-sm sm:text-base">Key Responsibilities</h4>
+                    <ul className="list-disc pl-5 space-y-1 text-slate-600 text-xs sm:text-sm">
+                      {selectedJob.responsibilities.map((resp, i) => <li key={i}>{resp}</li>)}
+                    </ul>
                   </div>
-                </div>
-              )}
+                ) : null
+              ) : null}
 
-              {selectedJob.deadline && (
+              {selectedJob.perks ? (
+                selectedJob.perks.length > 0 ? (
+                  <div>
+                    <h4 className="font-extrabold text-slate-900 mb-2 border-b border-slate-100 pb-2 text-sm sm:text-base">Benefits & Perks</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {selectedJob.perks.map((perk, i) => (
+                        <span key={i} className="text-[10px] sm:text-xs font-bold bg-indigo-50 text-indigo-700 border border-indigo-100 px-2.5 py-1 rounded-md flex items-center">
+                          {perk}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ) : null
+              ) : null}
+
+              {selectedJob.deadline ? (
                 <div className="bg-rose-50 border border-rose-100 rounded-lg p-3 sm:p-4 flex items-center text-rose-700 text-xs sm:text-sm font-bold shadow-sm mt-4">
                   Application Deadline: {new Date(selectedJob.deadline).toLocaleDateString()}
                 </div>
-              )}
+              ) : null}
             </div>
             
             <div className="sticky bottom-0 bg-slate-50 px-5 sm:px-6 py-4 border-t border-slate-200 flex flex-col sm:flex-row justify-end gap-2.5 sm:gap-3 z-10 rounded-b-2xl">
@@ -599,27 +662,68 @@ function JobBoard() {
                 Cancel
               </button>
               
-              {userRole == "jobSeeker" && (
+              {userRole == "jobSeeker" ? (
                 <button onClick={() => handleMessageEmployer(selectedJob)} className="w-full sm:w-auto px-5 py-2.5 text-xs sm:text-sm font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:bg-indigo-100 rounded-xl shadow-sm transition flex items-center justify-center gap-1.5 order-2">
                   Message
                 </button>
-              )}
+              ) : null}
 
-              {userRole == "jobSeeker" && selectedJob.applicationLink && selectedJob.applicationLink.length > 0 && (
-                <a href={selectedJob.applicationLink} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-8 py-2.5 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition order-1 sm:order-3 flex items-center justify-center gap-2">
-                  Apply on Company Site
-                </a>
-              )}
-              
-              {userRole == "jobSeeker" && (selectedJob.applicationLink == null || selectedJob.applicationLink.length == 0) && (
-                <button onClick={() => handleApply(selectedJob._id)} className="w-full sm:w-auto px-8 py-2.5 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition order-1 sm:order-3">
-                  Apply Now
-                </button>
-              )}
+              {userRole == "jobSeeker" ? (
+                selectedJob.applicationLink && selectedJob.applicationLink.length > 0 ? (
+                  <a href={selectedJob.applicationLink} target="_blank" rel="noopener noreferrer" className="w-full sm:w-auto px-8 py-2.5 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition order-1 sm:order-3 flex items-center justify-center gap-2">
+                    Apply on Company Site
+                  </a>
+                  ) : (
+                  <button onClick={() => initiateApply(selectedJob._id)} className="w-full sm:w-auto px-8 py-2.5 text-xs sm:text-sm font-bold text-white bg-blue-600 hover:bg-blue-700 rounded-xl shadow-md transition order-1 sm:order-3">
+                    Apply Now
+                  </button>
+                )
+              ) : null}
             </div>
           </div>
         </div>
-      )}
+      ) : null}
+
+      {/* 🚨 NEW PREMIUM COVER LETTER MODAL */}
+      {showApplyModal ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900 bg-opacity-70 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col overflow-hidden">
+            
+            <div className="px-6 py-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+              <div>
+                 <h3 className="text-xl font-extrabold text-slate-900">Submit Application</h3>
+                 <p className="text-xs text-slate-500 font-medium mt-1">Include a brief message to stand out.</p>
+              </div>
+              <button onClick={() => setShowApplyModal(false)} className="text-slate-400 hover:text-rose-500 transition bg-white hover:bg-rose-50 rounded-full p-2 border border-slate-200 shadow-sm">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="p-6">
+               <label className="block text-sm font-bold text-slate-700 mb-2">Cover Letter / Pitch <span className="text-slate-400 font-normal">(Optional)</span></label>
+               <textarea 
+                 rows="5" 
+                 value={coverLetterText} 
+                 onChange={(e) => setCoverLetterText(e.target.value)} 
+                 className="w-full border border-slate-300 rounded-xl p-4 focus:ring-2 focus:ring-blue-600 focus:border-transparent outline-none text-sm text-slate-700 shadow-inner bg-slate-50 transition" 
+                 placeholder="Hi there! I believe I am a great fit for this role because..."
+               ></textarea>
+               <p className="text-xs text-slate-400 mt-2 text-right">Your profile and resume will be attached automatically.</p>
+            </div>
+            
+            <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end gap-3">
+               <button onClick={() => setShowApplyModal(false)} className="px-5 py-2.5 rounded-xl font-bold text-slate-600 bg-white border border-slate-300 hover:bg-slate-100 transition shadow-sm">
+                 Cancel
+               </button>
+               <button onClick={submitApplication} className="px-6 py-2.5 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-md flex items-center gap-2">
+                 Send Application
+                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+               </button>
+            </div>
+
+          </div>
+        </div>
+      ) : null}
 
     </div>
   );

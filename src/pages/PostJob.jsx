@@ -9,7 +9,7 @@ function PostJob() {
   
   const [formData, setFormData] = useState({
     title: "",
-    category: "", // 🚨 Starts empty so they can type or select
+    category: "", 
     location: "",
     isRemote: false, 
     employmentType: "Full-time",
@@ -26,7 +26,15 @@ function PostJob() {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setFormData({ ...formData, [name]: type === "checkbox" ? checked : value });
+    setFormData(function(prev) {
+      return { ...prev, [name]: type === "checkbox" ? checked : value };
+    });
+  };
+
+  const toggleRemote = () => {
+    setFormData(function(prev) {
+      return { ...prev, isRemote: !prev.isRemote };
+    });
   };
 
   const handleSubmit = async (e) => {
@@ -54,17 +62,18 @@ function PostJob() {
 
       const payload = {
         title: formData.title,
-        category: formData.category || "Other", // Fallback if they leave it empty
+        category: formData.category ? formData.category : "Other",
         location: finalLocation,
+        isRemote: formData.isRemote, 
         employmentType: formData.employmentType,
         experienceLevel: formData.experienceLevel,
         education: formData.education,
         salary: Number(formData.salary),
-        deadline: formData.deadline || undefined,
+        deadline: formData.deadline ? formData.deadline : undefined,
         description: formData.description,
-        responsibilities: formData.responsibilities.split('\n').map(item => item.trim()).filter(item => item !== ""),
-        skills: formData.skills.split(',').map(item => item.trim()).filter(item => item !== ""),
-        perks: formData.perks.split(',').map(item => item.trim()).filter(item => item !== ""),
+        responsibilities: formData.responsibilities.split('\n').map(function(item){ return item.trim(); }).filter(function(item){ return item !== ""; }),
+        skills: formData.skills.split(',').map(function(item){ return item.trim(); }).filter(function(item){ return item !== ""; }),
+        perks: formData.perks.split(',').map(function(item){ return item.trim(); }).filter(function(item){ return item !== ""; }),
         applicationLink: formData.applicationLink 
       };
 
@@ -95,14 +104,13 @@ function PostJob() {
   const inputClass = "appearance-none block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm";
   const labelClass = "block text-xs font-extrabold text-slate-700 mb-2 uppercase tracking-wider";
 
-  return (
+return (
     <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans pb-24">
       <div className="max-w-4xl mx-auto">
         <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
           
-          {/* PREMIUM HEADER */}
           <div className="bg-slate-900 px-8 py-12 border-b border-slate-800 relative overflow-hidden text-center">
-             <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-blue-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
+            <div className="absolute top-0 right-0 -mt-10 -mr-10 w-40 h-40 bg-blue-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
              <div className="absolute bottom-0 left-0 -mb-10 -ml-10 w-40 h-40 bg-indigo-500 rounded-full blur-3xl opacity-20 pointer-events-none"></div>
              
              <div className="relative z-10 flex flex-col items-center">
@@ -119,7 +127,6 @@ function PostJob() {
           <div className="px-6 py-10 sm:p-12">
             <form onSubmit={handleSubmit} className="space-y-10">
               
-              {/* SECTION 1: BASIC INFO */}
               <div>
                 <h3 className="text-lg font-black text-slate-900 border-b border-slate-100 pb-3 mb-6 flex items-center gap-2">
                   <span className="bg-blue-100 text-blue-700 h-6 w-6 rounded-full flex items-center justify-center text-xs">1</span>
@@ -131,7 +138,6 @@ function PostJob() {
                     <input type="text" name="title" value={formData.title} onChange={handleChange} required className={inputClass} placeholder="e.g. Senior Product Designer" />
                   </div>
                   
-                  {/* 🚨 THE NEW COMBO-BOX FOR CATEGORIES */}
                   <div>
                     <label className={labelClass}>Category</label>
                     <input 
@@ -144,19 +150,49 @@ function PostJob() {
                       className={inputClass} 
                       placeholder="Select or type a category..." 
                     />
+                    {/* 🚨 BULLETPROOF OPTIONS - NO SELF CLOSING TAGS */}
                     <datalist id="job-categories">
-                      <option value="Information Technology (IT)" />
-                      <option value="Finance" />
-                      <option value="Healthcare" />
-                      <option value="Education" />
-                      <option value="Sports" />
-                      <option value="Tourism" />
-                      <option value="Construction" />
-                      <option value="Delivery & Logistics" />
-                      <option value="Care Assistance" />
-                      <option value="Warehouse" />
-                      <option value="Retail & Hospitality" />
-                      <option value="Agriculture" />
+                      <option value="Customer Support"></option>
+                      <option value="Virtual Assistant"></option>
+                      <option value="Data Entry"></option>
+                      <option value="Chat Support Agent"></option>
+                      <option value="Transcriptionist"></option>
+                      <option value="Social Media Moderator"></option>
+                      <option value="Content Writing"></option>
+                      <option value="Online Tutor"></option>
+                      <option value="Call Center Agent"></option>
+                      <option value="Tech Support"></option>
+                      <option value="Dropshipping Assistant"></option>
+                      <option value="Translation"></option>
+                      <option value="Community Manager"></option>
+                      <option value="QA Testing"></option>
+                      <option value="Virtual Receptionist"></option>
+                      <option value="Lead Generation"></option>
+                      <option value="Proofreading"></option>
+                      <option value="Order Processing"></option>
+                      <option value="IT Helpdesk"></option>
+                      <option value="Telemarketing"></option>
+                      <option value="Search Engine Evaluation"></option>
+                      <option value="Data Annotation"></option>
+                      <option value="E-commerce Manager"></option>
+                      <option value="Graphic Design"></option>
+                      <option value="Web Development"></option>
+                      <option value="IT"></option>
+                      <option value="Finance"></option>
+                      <option value="Healthcare"></option>
+                      <option value="Education"></option>
+                      <option value="Construction"></option>
+                      <option value="Delivery"></option>
+                      <option value="Care Assistance"></option>
+                      <option value="Warehouse"></option>
+                      <option value="Retail"></option>
+                      <option value="Hospitality"></option>
+                      <option value="Real Estate"></option>
+                      <option value="Legal"></option>
+                      <option value="Marketing"></option>
+                      <option value="Human Resources"></option>
+                      <option value="Sales"></option>
+                      <option value="Other"></option>
                     </datalist>
                   </div>
                 </div>
@@ -167,20 +203,21 @@ function PostJob() {
                     <input type="text" name="location" value={formData.location} onChange={handleChange} required className={inputClass} placeholder="e.g. New York, NY" />
                   </div>
                   
-                  <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200 mt-2 md:mt-0 md:-mb-1">
+                  <div 
+                    onClick={toggleRemote}
+                    className={"flex items-center justify-between p-4 rounded-xl border transition cursor-pointer mt-2 md:mt-0 md:-mb-1 shadow-sm " + (formData.isRemote ? "bg-purple-50 border-purple-200" : "bg-slate-50 border-slate-200 hover:border-blue-200")}
+                  >
                     <div>
-                      <h4 className="text-sm font-extrabold text-slate-900">Remote Flexibility</h4>
-                      <p className="text-xs font-medium text-slate-500 mt-0.5">Can this job be done from anywhere?</p>
+                      <h4 className={"text-sm font-extrabold " + (formData.isRemote ? "text-purple-800" : "text-slate-900")}>Remote Flexibility</h4>
+                      <p className={"text-xs font-medium mt-0.5 " + (formData.isRemote ? "text-purple-600" : "text-slate-500")}>Can this job be done from anywhere?</p>
                     </div>
-                    <label className="relative inline-flex items-center cursor-pointer">
-                      <input type="checkbox" name="isRemote" checked={formData.isRemote} onChange={handleChange} className="sr-only peer" />
-                      <div className="w-11 h-6 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-                    </label>
+                    <div className={"relative inline-flex h-6 w-11 items-center rounded-full transition-colors " + (formData.isRemote ? "bg-purple-600" : "bg-slate-300")}>
+                      <span className={"inline-block h-5 w-5 transform rounded-full bg-white transition-transform " + (formData.isRemote ? "translate-x-6" : "translate-x-1")}></span>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              {/* SECTION 2: JOB REQUIREMENTS */}
               <div>
                 <h3 className="text-lg font-black text-slate-900 border-b border-slate-100 pb-3 mb-6 flex items-center gap-2">
                   <span className="bg-indigo-100 text-indigo-700 h-6 w-6 rounded-full flex items-center justify-center text-xs">2</span>
@@ -189,7 +226,7 @@ function PostJob() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div>
                     <label className={labelClass}>Employment Type</label>
-                    <select name="employmentType" value={formData.employmentType} onChange={handleChange} className={`${inputClass} cursor-pointer`}>
+                    <select name="employmentType" value={formData.employmentType} onChange={handleChange} className={inputClass + " cursor-pointer"}>
                       <option value="Full-time">Full-time</option>
                       <option value="Part-time">Part-time</option>
                       <option value="Contract">Contract</option>
@@ -199,7 +236,7 @@ function PostJob() {
                   </div>
                   <div>
                     <label className={labelClass}>Experience Level</label>
-                    <select name="experienceLevel" value={formData.experienceLevel} onChange={handleChange} className={`${inputClass} cursor-pointer`}>
+                    <select name="experienceLevel" value={formData.experienceLevel} onChange={handleChange} className={inputClass + " cursor-pointer"}>
                       <option value="Entry Level">Entry Level</option>
                       <option value="Mid Level">Mid Level</option>
                       <option value="Senior Level">Senior Level</option>
@@ -208,7 +245,7 @@ function PostJob() {
                   </div>
                   <div>
                     <label className={labelClass}>Minimum Education</label>
-                    <select name="education" value={formData.education} onChange={handleChange} className={`${inputClass} cursor-pointer`}>
+                    <select name="education" value={formData.education} onChange={handleChange} className={inputClass + " cursor-pointer"}>
                       <option value="None Required">None Required</option>
                       <option value="High School Diploma or equivalent">High School / GED</option>
                       <option value="Associate Degree">Associate Degree</option>
@@ -219,7 +256,6 @@ function PostJob() {
                 </div>
               </div>
 
-              {/* SECTION 3: DETAILED DESCRIPTION */}
               <div>
                 <h3 className="text-lg font-black text-slate-900 border-b border-slate-100 pb-3 mb-6 flex items-center gap-2">
                   <span className="bg-emerald-100 text-emerald-700 h-6 w-6 rounded-full flex items-center justify-center text-xs">3</span>
@@ -241,7 +277,6 @@ function PostJob() {
                 </div>
               </div>
 
-              {/* SECTION 4: COMPENSATION, DEADLINES & EXTERNAL LINK */}
               <div>
                 <h3 className="text-lg font-black text-slate-900 border-b border-slate-100 pb-3 mb-6 flex items-center gap-2">
                   <span className="bg-rose-100 text-rose-700 h-6 w-6 rounded-full flex items-center justify-center text-xs">4</span>
@@ -254,12 +289,12 @@ function PostJob() {
                       <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                         <span className="text-slate-400 font-bold">$</span>
                       </div>
-                      <input type="number" name="salary" value={formData.salary} onChange={handleChange} required className={`${inputClass} pl-8`} placeholder="e.g. 85000" />
+                      <input type="number" name="salary" value={formData.salary} onChange={handleChange} required className={inputClass + " pl-8"} placeholder="e.g. 85000" />
                     </div>
                   </div>
                   <div>
                     <label className={labelClass}>Application Deadline</label>
-                    <input type="date" name="deadline" value={formData.deadline} onChange={handleChange} className={`${inputClass} cursor-pointer`} />
+                    <input type="date" name="deadline" value={formData.deadline} onChange={handleChange} className={inputClass + " cursor-pointer"} />
                   </div>
                 </div>
                 <div className="mt-6">
@@ -267,7 +302,6 @@ function PostJob() {
                   <input type="text" name="perks" value={formData.perks} onChange={handleChange} className={inputClass} placeholder="e.g. Health Insurance, 401k, Remote Work, Gym Membership" />
                 </div>
                 
-                {/* 🚨 CHANGED TO type="text" SO IT NEVER BLOCKS YOU AGAIN */}
                 <div className="mt-6">
                   <label className={labelClass}>External Application Link (Optional)</label>
                   <p className="text-xs text-slate-500 mb-2 font-medium">If you want candidates to apply on your own website, paste the URL here.</p>
@@ -275,7 +309,7 @@ function PostJob() {
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                     </div>
-                    <input type="text" name="applicationLink" value={formData.applicationLink} onChange={handleChange} className={`${inputClass} pl-11`} placeholder="https://yourcompany.com/careers/apply" />
+                    <input type="text" name="applicationLink" value={formData.applicationLink} onChange={handleChange} className={inputClass + " pl-11"} placeholder="https://yourcompany.com/careers/apply" />
                   </div>
                 </div>
               </div>

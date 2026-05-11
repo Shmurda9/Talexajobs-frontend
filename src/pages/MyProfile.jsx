@@ -7,9 +7,7 @@ function MyProfile() {
   const [userRole, setUserRole] = useState('');
   const [loading, setLoading] = useState(false);
   
-  // File States
-  const [avatarFile, setAvatarFile] = useState(null);
-  const [avatarPreview, setAvatarPreview] = useState(null);
+  // File States (Avatar file completely removed since it's now handled in Settings)
   const [documentFile, setDocumentFile] = useState(null); 
 
   // Candidate States
@@ -56,41 +54,27 @@ function MyProfile() {
     }
   }, []);
 
+  // 🚨 UPDATED TO ALWAYS FETCH THE UNIVERSAL PROFILE PICTURE
   const getAvatarSrc = () => {
-    if (avatarPreview) return avatarPreview; 
-    
-    if (userRole === 'employer') {
-      if (userData && userData.employerInfo && userData.employerInfo.logoUrl) {
-        const cleanPath = userData.employerInfo.logoUrl.replace(/\\/g, '/');
-        return "https://talexajobs.onrender.com/" + cleanPath;
+    if (userData && userData.profilePictureUrl) {
+      let pUrl = userData.profilePictureUrl;
+      if (!pUrl.startsWith('http')) {
+        const cleanPath = pUrl.replace(/\\/g, '/');
+        pUrl = "https://talexajobs.onrender.com/" + cleanPath;
       }
-    } else {
-      if (userData && userData.profilePictureUrl) {
-        const cleanPath = userData.profilePictureUrl.replace(/\\/g, '/');
-        return "https://talexajobs.onrender.com/" + cleanPath;
-      }
+      return pUrl;
     }
-    return "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_960_720.png";
+    // Fallback if no picture is set
+    return null; 
   };
 
   const getResumeUrl = () => {
     if (userData && userData.candidateInfo && userData.candidateInfo.resumeUrl) {
       const cleanPath = userData.candidateInfo.resumeUrl.replace(/\\/g, '/');
-      
-      // 🚨 THE FIX: If it's already a Cloudinary link, just return it directly!
       if (cleanPath.startsWith('http')) return cleanPath;
-      
       return "https://talexajobs.onrender.com/" + cleanPath;
     }
     return "#";
-  };
-
-  const handleAvatarChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setAvatarFile(file);
-      setAvatarPreview(URL.createObjectURL(file));
-    }
   };
 
   const handleSubmit = async (e) => {
@@ -117,7 +101,6 @@ function MyProfile() {
         
         formData.append('candidateInfo', JSON.stringify(candidateInfo));
         if (documentFile) formData.append('resume', documentFile);
-        if (avatarFile) formData.append('profilePicture', avatarFile);
         
       } else {
         const employerInfo = {
@@ -129,7 +112,6 @@ function MyProfile() {
         };
         
         formData.append('employerInfo', JSON.stringify(employerInfo));
-        if (avatarFile) formData.append('companyLogo', avatarFile);
       }
 
       const response = await axios.put('https://talexajobs.onrender.com/api/users/profile', formData, {
@@ -207,23 +189,25 @@ function MyProfile() {
             <form onSubmit={handleSubmit} className="space-y-8">
 
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-6 -mt-16 sm:-mt-20 mb-8 border-b border-slate-100 pb-8 relative z-10">
-                <div className="relative h-32 w-32 sm:h-40 sm:w-40 rounded-full border-4 border-white shadow-xl overflow-hidden bg-slate-200 group flex-shrink-0">
-                  <img src={getAvatarSrc()} alt="Profile" className="h-full w-full object-cover" />
-                  
-                  <label className="absolute inset-0 bg-black bg-opacity-60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 cursor-pointer transition-opacity duration-200">
-                    <svg className="w-8 h-8 text-white mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    <span className="text-white text-xs font-bold uppercase tracking-wider">Change Photo</span>
-                    <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
-                  </label>
+                
+                {/* 🚨 THE FIX: Clean, read-only picture. No camera hover! */}
+                <div className="h-32 w-32 sm:h-40 sm:w-40 rounded-full border-4 border-white bg-slate-200 overflow-hidden shadow-xl flex-shrink-0 flex items-center justify-center">
+                  {getAvatarSrc() ? (
+                    <img src={getAvatarSrc()} alt="Profile" className="h-full w-full object-cover" />
+                  ) : (
+                    <span className="text-5xl text-slate-400 font-bold">
+                      {userData && userData.fullName ? userData.fullName.charAt(0).toUpperCase() : "U"}
+                    </span>
+                  )}
                 </div>
                 
                 <div className="text-center sm:text-left mb-2">
                   <h2 className="text-xl font-extrabold text-slate-900">{userData ? userData.fullName : "User"}</h2>
                   <p className="text-sm font-bold text-slate-500 mt-1 uppercase tracking-wider">
                     {userRole === 'employer' ? 'Company Logo' : 'Profile Picture'}
+                    </p>
+                  <p className="text-xs text-blue-600 mt-2 hover:underline cursor-pointer" onClick={() => window.location.href='/settings'}>
+                    Edit photo in Settings →
                   </p>
                 </div>
               </div>
@@ -271,7 +255,6 @@ function MyProfile() {
                         </a>
                       </div>
                     )}
-
                     <div className="relative border-2 border-dashed border-slate-300 rounded-xl p-6 text-center hover:bg-slate-50 transition cursor-pointer">
                       <input type="file" accept=".pdf" onChange={(e) => setDocumentFile(e.target.files[0])} className="absolute inset-0 w-full h-full opacity-0 cursor-pointer" />
                       <div className="text-slate-500">
