@@ -116,11 +116,11 @@ function AdminDashboard() {
       });
       setAllJobs(allJobs.filter((job) => job._id !== jobId));
       setSelectedJob(null); 
-      toast.success("Job permanently deleted."); 
-    } catch (error) {
+      toast.success("Job permanently deleted.");
+      } catch (error) {
       toast.error("Failed to delete job."); 
     }
-    };
+  };
 
   const handleBlockUser = async (userId, currentStatus) => {
     const token = localStorage.getItem("token");
@@ -172,6 +172,32 @@ function AdminDashboard() {
     if (user.fullName) return user.fullName;
     return "Confidential";
   };
+
+  // Extract Safely for Admin Modal
+  let empBio = "No description provided.";
+  let empWebsite = "";
+  let empLocation = "";
+  let empNameDisplay = "Not Provided";
+
+  if (selectedEmployer) {
+     if (selectedEmployer.bio) { empBio = selectedEmployer.bio; }
+     if (selectedEmployer.location) { empLocation = selectedEmployer.location; }
+     if (selectedEmployer.portfolioUrl) { empWebsite = selectedEmployer.portfolioUrl; }
+     else if (selectedEmployer.website) { empWebsite = selectedEmployer.website; }
+     
+     if (selectedEmployer.employerInfo) {
+        if (selectedEmployer.employerInfo.companyName) { empNameDisplay = selectedEmployer.employerInfo.companyName; }
+        
+        if (selectedEmployer.employerInfo.bio) { empBio = selectedEmployer.employerInfo.bio; }
+        else if (selectedEmployer.employerInfo.companyDescription) { empBio = selectedEmployer.employerInfo.companyDescription; }
+        
+        if (selectedEmployer.employerInfo.personalWebsite) { empWebsite = selectedEmployer.employerInfo.personalWebsite; }
+        else if (selectedEmployer.employerInfo.website) { empWebsite = selectedEmployer.employerInfo.website; }
+        
+        if (selectedEmployer.employerInfo.companyLocation) { empLocation = selectedEmployer.employerInfo.companyLocation; }
+        else if (selectedEmployer.employerInfo.location) { empLocation = selectedEmployer.employerInfo.location; }
+     }
+  }
 
   if (accessDenied) {
     return (
@@ -409,9 +435,9 @@ function AdminDashboard() {
             )}
           </div>
         )}
+        </div>
 
-      </div>
-
+      {/* 🚨 UPDATED MODAL: Now shows the new Profile Bio and Portfolio fields! */}
       {selectedEmployer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 bg-opacity-60 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 flex flex-col">
@@ -434,24 +460,34 @@ function AdminDashboard() {
               <div>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Company Name</p>
                 <p className="text-slate-900 font-bold text-lg">
-                  {selectedEmployer.employerInfo && selectedEmployer.employerInfo.companyName ? selectedEmployer.employerInfo.companyName : "Not Provided"}
+                  {empNameDisplay}
                 </p>
               </div>
-              {selectedEmployer.employerInfo && selectedEmployer.employerInfo.website && (
+              
+              {empLocation && empLocation !== "" && (
+                 <div>
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Location</p>
+                  <p className="text-slate-900 font-bold">{empLocation}</p>
+                </div>
+              )}
+
+              {empWebsite && empWebsite !== "" && (
                 <div>
-                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Website</p>
-                  <a href={selectedEmployer.employerInfo.website} target="_blank" rel="noreferrer" className="text-blue-600 text-sm hover:underline break-all">
-                    {selectedEmployer.employerInfo.website}
+                  <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Portfolio / Website</p>
+                  <a href={empWebsite.startsWith('http') ? empWebsite : "https://" + empWebsite} target="_blank" rel="noreferrer" className="text-blue-600 text-sm hover:underline break-all font-bold">
+                    {empWebsite}
                   </a>
                 </div>
               )}
+
               <div>
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Company Description</p>
-                <p className="text-slate-600 text-sm leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100">
-                  {selectedEmployer.employerInfo && selectedEmployer.employerInfo.companyDescription ? selectedEmployer.employerInfo.companyDescription : "No description provided by the employer."}
+                <p className="text-xs font-bold text-slate-400 uppercase tracking-wider mb-1">Professional Bio / Description</p>
+                <p className="text-slate-600 text-sm leading-relaxed bg-slate-50 p-3 rounded-lg border border-slate-100 whitespace-pre-wrap">
+                  {empBio}
                 </p>
               </div>
             </div>
+            
             <div className="bg-slate-50 px-6 py-4 border-t border-slate-200 flex justify-end gap-3">
               <button onClick={() => handleVerifyEmployer(selectedEmployer._id, "rejected")} className="px-5 py-2 text-sm font-bold text-rose-700 bg-rose-50 border border-rose-200 hover:bg-rose-100 rounded-lg transition shadow-sm w-full sm:w-auto">Reject</button>
               <button onClick={() => handleVerifyEmployer(selectedEmployer._id, "approved")} className="px-6 py-2 text-sm font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-lg shadow-md transition w-full sm:w-auto">Approve Company</button>
@@ -512,7 +548,7 @@ function AdminDashboard() {
                   <div className="flex flex-wrap gap-2">
                     {selectedJob.perks.map((perk, i) => (
                       <span key={i} className="text-xs font-bold bg-indigo-50 text-indigo-700 px-2 py-1 rounded-md border border-indigo-100">{perk}</span>
-                    ))}
+                      ))}
                   </div>
                 </div>
               )}

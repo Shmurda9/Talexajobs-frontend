@@ -31,6 +31,7 @@ import ManageApplicants from './pages/ManageApplicants';
 import Settings from './pages/Settings';
 import About from './pages/About';
 import ChangePassword from './pages/ChangePassword';
+import EmployerProfile from './pages/EmployerProfile';
 
 function App() {
   return (
@@ -90,6 +91,7 @@ function App() {
             <Route path="/settings" element={<Settings />} />
             <Route path="/about" element={<About />} />
             <Route path="/change-password" element={<ChangePassword />} />
+            <Route path="/user-profile/:id" element={<EmployerProfile />} />
           </Routes>
         </div>
         

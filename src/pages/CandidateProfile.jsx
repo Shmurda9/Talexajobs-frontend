@@ -38,7 +38,6 @@ function CandidateProfile() {
     fetchProfile();
   }, [id, token, navigate]);
 
-  // 🚨 THE FIX: NO MORE WINDOW PROMPT! Instant redirect to chat!
   const handleMessageRedirect = () => {
     navigate('/messages', { state: { prefilledContact: candidate } });
   };
@@ -110,18 +109,19 @@ function CandidateProfile() {
         </button>
 
         {/* PROFILE HEADER CARD */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6 sm:mb-8">
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6 sm:mb-8 relative">
           <div className="bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-600 h-32 sm:h-40 relative">
              <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
           </div>
           
           <div className="px-5 sm:px-8 md:px-10 pb-6 sm:pb-8 relative">
             
-            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between -mt-14 sm:-mt-16 mb-4 sm:mb-6 gap-4">
+            {/* 🚨 FIXED MARGINS HERE: Text stays low, only avatar floats up! */}
+            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between mb-4 sm:mb-6 gap-4">
               
               <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 w-full sm:w-auto text-center sm:text-left">
                 
-                <div className="h-24 w-24 sm:h-32 sm:w-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-100 flex items-center justify-center flex-shrink-0 z-10 relative">
+                <div className="-mt-14 sm:-mt-16 h-24 w-24 sm:h-32 sm:w-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-100 flex items-center justify-center flex-shrink-0 z-10 relative">
                   {avatarUrl && !imgError ? (
                      <img 
                        src={avatarUrl} 
@@ -134,23 +134,20 @@ function CandidateProfile() {
                   )}
                 </div>
                 
-                <div className="mt-2 sm:mt-0 mb-1 sm:mb-2 flex-1 min-w-0">
+                <div className="mt-2 sm:mt-0 mb-1 sm:mb-2 flex-1 min-w-0 pt-2 sm:pt-0">
                   <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 break-words leading-tight">{candidate.fullName}</h1>
                   <p className="text-base sm:text-lg text-blue-600 font-extrabold mt-1 truncate">{cInfo.headline ? cInfo.headline : "Professional Candidate"}</p>
                 </div>
               </div>
               
-              <div className="mt-2 sm:mt-0 w-full sm:w-auto flex-shrink-0 z-10">
-                
-                {/* 🚨 THE UPGRADED MESSAGE BUTTON */}
+              <div className="mt-3 sm:mt-0 w-full sm:w-auto flex-shrink-0 z-10 pt-2 sm:pt-0">
                 <button 
                   onClick={handleMessageRedirect} 
                   className="w-full bg-blue-600 text-white font-extrabold py-3.5 px-8 rounded-xl hover:bg-blue-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
                 >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03-8-9-8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
                   Message {candidate.fullName.split(' ')[0]}
                 </button>
-                
               </div>
             </div>
 
@@ -158,7 +155,7 @@ function CandidateProfile() {
               <div className="flex items-center text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 w-fit max-w-full">
                 <svg className="w-4 h-4 mr-2 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v10a2 2 0 002 2z" /></svg>
                 <span className="font-bold text-xs sm:text-sm truncate">{candidate.email}</span>
-              </div>
+                </div>
               {cInfo.location && (
                 <div className="flex items-center text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 w-fit max-w-full">
                   <svg className="w-4 h-4 mr-2 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
@@ -199,7 +196,7 @@ function CandidateProfile() {
                       <div className="absolute w-3.5 h-3.5 bg-indigo-500 rounded-full -left-[9px] top-1.5 ring-4 ring-white"></div>
                       <h4 className="font-bold text-slate-900 text-base sm:text-lg">{exp.jobTitle}</h4>
                       <p className="text-sm font-bold text-indigo-600 mb-2">
-                        {exp.companyName} <span className="text-slate-400 font-medium ml-1 sm:ml-2 block sm:inline">â¢ {exp.startDate} - {exp.endDate}</span>
+                        {exp.companyName} <span className="text-slate-400 font-medium ml-1 sm:ml-2 block sm:inline">• {exp.startDate} - {exp.endDate}</span>
                       </p>
                       {exp.description && (
                         <p className="text-sm text-slate-600 leading-relaxed font-medium">{exp.description}</p>

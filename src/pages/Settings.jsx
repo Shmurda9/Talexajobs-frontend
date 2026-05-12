@@ -19,7 +19,9 @@ function Settings() {
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
-    location: '' 
+    location: '',
+    bio: '',
+    portfolioUrl: ''
   });
   
   const [selectedFile, setSelectedFile] = useState(null);
@@ -56,19 +58,41 @@ function Settings() {
           const u = res.data.user;
           
           let userLocation = '';
-          if (userRole === 'jobSeeker' && u.candidateInfo && u.candidateInfo.location) {
-             userLocation = u.candidateInfo.location;
-          } else if (userRole === 'employer' && u.employerInfo && u.employerInfo.companyLocation) {
-             userLocation = u.employerInfo.companyLocation;
+          let userBio = '';
+          let userPortfolio = '';
+          let userFullName = '';
+          let userEmail = '';
+
+          if (u.fullName) { userFullName = u.fullName; }
+          if (u.email) { userEmail = u.email; }
+
+          // 🚨 FIXED: Bulletproof if/else statements instead of || operators!
+          if (userRole === 'jobSeeker' && u.candidateInfo) {
+             if (u.candidateInfo.location) { userLocation = u.candidateInfo.location; }
+             if (u.candidateInfo.bio) { userBio = u.candidateInfo.bio; }
+             if (u.candidateInfo.portfolioUrl) { userPortfolio = u.candidateInfo.portfolioUrl; }
+             
+          } else if (userRole === 'employer' && u.employerInfo) {
+             if (u.employerInfo.companyLocation) { userLocation = u.employerInfo.companyLocation; }
+             else if (u.employerInfo.location) { userLocation = u.employerInfo.location; }
+             
+             if (u.employerInfo.bio) { userBio = u.employerInfo.bio; }
+             else if (u.bio) { userBio = u.bio; }
+             
+             if (u.employerInfo.personalWebsite) { userPortfolio = u.employerInfo.personalWebsite; }
+             else if (u.employerInfo.website) { userPortfolio = u.employerInfo.website; }
+             else if (u.portfolioUrl) { userPortfolio = u.portfolioUrl; }
           }
 
           setFormData({
-            fullName: u.fullName,
-            email: u.email,
-            location: userLocation
+            fullName: userFullName,
+            email: userEmail,
+            location: userLocation,
+            bio: userBio,
+            portfolioUrl: userPortfolio
           });
           
-          setInitialEmail(u.email); 
+          setInitialEmail(userEmail); 
 
           if (u.profilePictureUrl) {
             let pUrl = u.profilePictureUrl;
@@ -110,9 +134,17 @@ function Settings() {
       if (selectedFile) updateData.append('profilePicture', selectedFile);
       
       if (userRole === 'jobSeeker') {
-         updateData.append('candidateInfo', JSON.stringify({ location: formData.location }));
+         updateData.append('candidateInfo', JSON.stringify({ 
+             location: formData.location,
+             bio: formData.bio,
+             portfolioUrl: formData.portfolioUrl
+         }));
       } else if (userRole === 'employer') {
-         updateData.append('employerInfo', JSON.stringify({ companyLocation: formData.location }));
+         updateData.append('employerInfo', JSON.stringify({ 
+             companyLocation: formData.location,
+             bio: formData.bio,
+             personalWebsite: formData.portfolioUrl
+         }));
       }
 
       const res = await axios.put('https://talexajobs.onrender.com/api/users/profile', updateData, {
@@ -190,7 +222,6 @@ function Settings() {
     <div className="min-h-screen bg-slate-50 py-8 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans">
       <div className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
         
-        {/* 🚨 THE UPGRADED RESPONSIVE HEADER */}
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-slate-100 pb-6">
           <div>
             <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 mb-1">Account Settings</h1>
@@ -249,6 +280,15 @@ function Settings() {
             <input type="text" name="location" value={formData.location} onChange={handleChange} disabled={!isEditing} placeholder="e.g. Austin, TX" className={inputClass} />
           </div>
 
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Professional Bio</label>
+            <textarea name="bio" rows="3" value={formData.bio} onChange={handleChange} disabled={!isEditing} placeholder="A brief introduction about yourself..." className={inputClass + " resize-none"} />
+          </div>
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-2">Portfolio / Website Link</label>
+            <input type="url" name="portfolioUrl" value={formData.portfolioUrl} onChange={handleChange} disabled={!isEditing} placeholder="https://linkedin.com/in/yourname" className={inputClass} />
+          </div>
+
           <div className="pt-4 pb-2">
             <button 
               type="button" 
@@ -299,7 +339,7 @@ function Settings() {
             
             <div className="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-col gap-3">
                <button onClick={handleVerifyOtp} disabled={verifyingOtp} className={"w-full py-3.5 rounded-xl font-black text-white transition shadow-md " + (verifyingOtp ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700")}>
-                 {verifyingOtp ? "Verifying..." : "Verify & Update Email"}
+                {verifyingOtp ? "Verifying..." : "Verify & Update Email"}
                </button>
                <button onClick={() => setShowOtpModal(false)} className="w-full py-3 rounded-xl font-bold text-slate-500 hover:text-slate-800 hover:bg-slate-200 transition">
                  Cancel

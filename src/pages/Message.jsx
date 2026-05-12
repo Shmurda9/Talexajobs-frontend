@@ -9,7 +9,7 @@ const IconPlay = () => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 
 const IconPause = () => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M6 19h4V5H6v14zm8-14v14h4V5h-4z"/></svg>);
 const IconEmpty = () => (<svg className="w-10 h-10 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03-8-9-8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>);
 const IconClose = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>);
-const IconMenu = () => (<svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 5v.01M12 12v.01M12 19v.01M12 6a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2zm0 7a1 1 0 110-2 1 1 0 010 2z" /></svg>);
+const IconMenu = () => (<svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>);
 const IconBlock = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" /></svg>);
 const IconUnblock = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>);
 const IconDelete = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>);
@@ -19,7 +19,7 @@ const IconSend = () => (<svg className="w-5 h-5 ml-0.5" fill="currentColor" view
 const IconMic = () => (<svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/></svg>);
 const IconChevronDown = () => (<svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M19 9l-7 7-7-7" /></svg>);
 
-// --- DYNAMIC AUDIO PLAYER (Kept in case users have old audio messages in DB) ---
+// --- DYNAMIC AUDIO PLAYER ---
 const CustomAudioPlayer = ({ audioUrl, isMe }) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -59,15 +59,27 @@ const CustomAudioPlayer = ({ audioUrl, isMe }) => {
     setIsPlaying(!isPlaying);
   };
 
+  let playerClass = "flex items-center gap-3 w-56 sm:w-64 pt-1 pb-3 ";
+  if (isMe) { playerClass += "text-white"; } else { playerClass += "text-slate-700"; }
+  
+  let barClass = "flex-1 h-1.5 rounded-full relative overflow-hidden ";
+  if (isMe) { barClass += "bg-blue-400"; } else { barClass += "bg-slate-200"; }
+  
+  let progressClass = "absolute top-0 left-0 h-full rounded-full transition-all ";
+  if (isMe) { progressClass += "bg-white"; } else { progressClass += "bg-blue-600"; }
+  
+  let micClass = "h-10 w-10 rounded-full flex-shrink-0 overflow-hidden border flex items-center justify-center ";
+  if (isMe) { micClass += "bg-blue-500 border-blue-400 text-blue-100"; } else { micClass += "bg-slate-100 border-slate-200 text-slate-400"; }
+
   return (
-    <div className={"flex items-center gap-3 w-56 sm:w-64 pt-1 pb-3 " + (isMe ? "text-white" : "text-slate-700")}>
+    <div className={playerClass}>
       <button onClick={togglePlay} type="button" className="flex-shrink-0 hover:scale-110 transition-transform focus:outline-none">
         {isPlaying ? <IconPause /> : <IconPlay />}
       </button>
-      <div className={"flex-1 h-1.5 rounded-full relative overflow-hidden " + (isMe ? "bg-blue-400" : "bg-slate-200")}>
-        <div className={"absolute top-0 left-0 h-full rounded-full transition-all " + (isMe ? "bg-white" : "bg-blue-600")} style={{ width: progress + '%' }}></div>
+      <div className={barClass}>
+        <div className={progressClass} style={{ width: progress + '%' }}></div>
       </div>
-      <div className={"h-10 w-10 rounded-full flex-shrink-0 overflow-hidden border flex items-center justify-center " + (isMe ? "bg-blue-500 border-blue-400 text-blue-100" : "bg-slate-100 border-slate-200 text-slate-400")}>
+      <div className={micClass}>
         <IconMic />
       </div>
     </div>
@@ -91,14 +103,30 @@ function Message() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
   
-  // Edit & Menu States
   const [editingMessage, setEditingMessage] = useState(null);
   const [activeBubbleMenu, setActiveBubbleMenu] = useState(null);
   
-  // Dynamic Block State
   const [isBlocked, setIsBlocked] = useState(false);
+  const [isTyping, setIsTyping] = useState(false);
   
-  // 🚨 LIVE TRACKER MATH
+  const chatContainerRef = useRef(null);
+  const textareaRef = useRef(null); 
+  const typingTimeoutRef = useRef(null);
+  const [socket, setSocket] = useState(null); 
+
+  const token = localStorage.getItem('token');
+  let myId = null;
+  if (token) {
+    try {
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      if (decoded.id) { myId = decoded.id; }
+      else if (decoded._id) { myId = decoded._id; }
+      else if (decoded.userId) { myId = decoded.userId; }
+    } catch (e) {
+      console.error("Token error", e);
+    }
+  }
+
   const formatLastSeen = (dateString) => {
     if (!dateString) { return "Offline"; }
     const date = new Date(dateString);
@@ -114,23 +142,6 @@ function Message() {
     if (diffInDays === 1) { return "Active yesterday"; }
     return "Active " + diffInDays + "d ago";
   };
-
-  const chatContainerRef = useRef(null);
-  const textareaRef = useRef(null); 
-  const [socket, setSocket] = useState(null); 
-
-  const token = localStorage.getItem('token');
-  let myId = null;
-  if (token) {
-    try {
-      const decoded = JSON.parse(atob(token.split('.')[1]));
-      if (decoded.id) { myId = decoded.id; }
-      else if (decoded._id) { myId = decoded._id; }
-      else if (decoded.userId) { myId = decoded.userId; }
-    } catch (e) {
-      console.error("Token error", e);
-    }
-  }
 
   const fetchInbox = useCallback(async () => {
     if (!token) return;
@@ -184,6 +195,7 @@ function Message() {
 
   useEffect(() => {
     if (!socket) return;
+    
     const handleIncomingMessage = (message) => {
       let isCurrentChat = false;
       if (selectedContact) {
@@ -205,7 +217,6 @@ function Message() {
       }
     };
 
-    // 🚨 LIVE STATUS SOCKET LISTENER
     const handleStatusUpdate = (data) => {
       setContacts(function(prev) {
         return prev.map(function(c) {
@@ -221,12 +232,28 @@ function Message() {
       });
     };
 
+    const handleTyping = (data) => {
+      if (selectedContact && data.senderId === selectedContact._id) {
+        setIsTyping(true);
+      }
+    };
+
+    const handleStopTyping = (data) => {
+      if (selectedContact && data.senderId === selectedContact._id) {
+        setIsTyping(false);
+      }
+    };
+
     socket.on("getMessage", handleIncomingMessage);
     socket.on("userStatusUpdate", handleStatusUpdate);
+    socket.on("typing", handleTyping);
+    socket.on("stopTyping", handleStopTyping);
     
     return () => { 
        socket.off("getMessage", handleIncomingMessage);
        socket.off("userStatusUpdate", handleStatusUpdate);
+       socket.off("typing", handleTyping);
+       socket.off("stopTyping", handleStopTyping);
     };
   }, [socket, selectedContact, fetchInbox, token]);
 
@@ -288,6 +315,14 @@ function Message() {
       textareaRef.current.style.height = '24px'; 
       textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 100) + 'px'; 
     }
+
+    if (socket && selectedContact) {
+      socket.emit("typing", { senderId: myId, receiverId: selectedContact._id });
+      if (typingTimeoutRef.current) { clearTimeout(typingTimeoutRef.current); }
+      typingTimeoutRef.current = setTimeout(() => {
+        socket.emit("stopTyping", { senderId: myId, receiverId: selectedContact._id });
+      }, 2000);
+    }
   };
 
   const startEditing = (msg) => {
@@ -327,6 +362,11 @@ function Message() {
     
     if (!okToSend) return;
     if (!selectedContact) return;
+
+    if (socket) {
+       socket.emit("stopTyping", { senderId: myId, receiverId: selectedContact._id });
+       if (typingTimeoutRef.current) { clearTimeout(typingTimeoutRef.current); }
+    }
 
     if (editingMessage) {
       try {
@@ -416,10 +456,12 @@ function Message() {
     }
     return "User";
   };
+  
   const getAvatarFallback = (user) => {
     if (!user) { return "U"; }
     return getDisplayName(user).charAt(0).toUpperCase();
   };
+  
   const getAvatarSrc = (user) => {
     if (!user) { return null; }
     let url = user.profilePictureUrl;
@@ -438,6 +480,30 @@ function Message() {
   let hasContentToSend = false;
   if (newMessage.trim() !== '') { hasContentToSend = true; }
   if (selectedImage !== null) { hasContentToSend = true; }
+
+  let contactLocation = "";
+  if (selectedContact) {
+      if (selectedContact.location) { contactLocation = selectedContact.location; }
+      else if (selectedContact.candidateInfo && selectedContact.candidateInfo.location) { contactLocation = selectedContact.candidateInfo.location; }
+      else if (selectedContact.employerInfo && selectedContact.employerInfo.location) { contactLocation = selectedContact.employerInfo.location; }
+  }
+
+  // 🚨 TEMPORARY FALLBACK ROUTING TO AVOID WHITE SCREEN
+  let profileRoute = "#";
+  if (selectedContact) {
+      if (selectedContact.role === 'employer') { 
+          // We are pointing this BACK to the Company Profile temporarily so it works!
+          profileRoute = "/user-profile/" + selectedContact._id; 
+      }
+      else { profileRoute = "/candidate/" + selectedContact._id; }
+  }
+
+  // 🚨 UI LOGIC FOR NEW HEADER
+  let headerDisplayStatus = formatLastSeen(selectedContact ? selectedContact.lastSeen : null);
+  if (selectedContact && selectedContact.isOnline) { headerDisplayStatus = "Active now"; }
+
+  let statusTextColorClass = "text-slate-500";
+  if (selectedContact && selectedContact.isOnline) { statusTextColorClass = "text-green-600"; }
 
   return (
     <div className="bg-[#f0f2f5] py-0 sm:py-6 font-sans flex justify-center overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
@@ -466,7 +532,6 @@ function Message() {
                  return (
                   <button key={contact._id} onClick={() => setSelectedContact(contact)} className={"w-full text-left flex items-center gap-3 px-4 py-3 transition border-b border-slate-50 " + (isSelected ? "bg-slate-100" : "hover:bg-slate-50")}>
                     
-                    {/* 🚨 SIDEBAR GREEN DOT */}
                     <div className="relative h-12 w-12 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500 flex-shrink-0">
                       <div className="overflow-hidden h-full w-full rounded-full">
                         {avatarSrc ? <img src={avatarSrc} alt="avatar" className="h-full w-full object-cover" /> : getAvatarFallback(contact)}
@@ -494,10 +559,10 @@ function Message() {
           </div>
 
           {/* MAIN CHAT AREA */}
-          <div className={"w-full md:w-2/3 flex flex-col bg-[#f8f9fa] h-full relative " + (!selectedContact ? "hidden md:flex" : "flex")}>
+          <div className={"w-full md:w-2/3 flex flex-col bg-white h-full relative " + (!selectedContact ? "hidden md:flex" : "flex")}>
             
             {!selectedContact ? (
-              <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-6 text-center z-10">
+              <div className="flex-1 flex flex-col items-center justify-center text-slate-400 p-6 text-center z-10 bg-[#f8f9fa]">
                 <div className="h-20 w-20 bg-white rounded-full flex items-center justify-center mb-4 shadow-sm border border-slate-100">
                   <IconEmpty />
                 </div>
@@ -506,37 +571,47 @@ function Message() {
               </div>
             ) : (
               <>
-                {/* 🚨 CHAT HEADER WITH LIVE TRACKING TEXT */}
-                <div className="px-4 py-2 bg-white border-b border-slate-200 flex items-center justify-between relative z-30 w-full shadow-sm">
-                  <div className="flex items-center gap-3 overflow-hidden cursor-pointer">
-                    <button onClick={() => setSelectedContact(null)} className="md:hidden p-1.5 text-slate-500 hover:bg-slate-100 rounded-full transition flex-shrink-0 mr-1">
-                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" /></svg>
+                {/* 🚨 MINIMAL STICKY HEADER WITH RESTORED ACTIVE STATUS */}
+                <div className="px-2 sm:px-4 py-2 sm:py-3 bg-white border-b border-slate-200 flex items-center justify-between relative z-30 w-full shadow-sm">
+                  <div className="flex items-center gap-2 sm:gap-3 overflow-hidden min-w-0">
+                    <button onClick={() => setSelectedContact(null)} className="md:hidden p-1.5 text-blue-600 hover:bg-slate-100 rounded-full transition flex-shrink-0">
+                      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" /></svg>
                     </button>
-                    <div className="h-10 w-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500 overflow-hidden flex-shrink-0">
+                    
+                    {/* Clickable Avatar */}
+                    <Link to={profileRoute} className="h-9 w-9 sm:h-10 sm:w-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500 overflow-hidden flex-shrink-0 border border-slate-100 shadow-sm hover:opacity-80 transition cursor-pointer">
                        {getAvatarSrc(selectedContact) ? <img src={getAvatarSrc(selectedContact)} alt="avatar" className="h-full w-full object-cover" /> : getAvatarFallback(selectedContact)}
-                    </div>
-                    <div className="overflow-hidden">
-                      <div className="flex items-center gap-1.5 mb-0.5">
-                        <p className="font-bold text-slate-800 text-[15px] truncate leading-tight">{getDisplayName(selectedContact)}</p>
-                        {selectedContact.isOnline ? <span className="w-2.5 h-2.5 rounded-full bg-green-500 shadow-sm"></span> : null}
+                    </Link>
+                    
+                    {/* Name, Green Dot, and Active Status */}
+                    <div className="overflow-hidden flex flex-col justify-center min-w-0">
+                      <div className="mb-0.5">
+                        <Link to={profileRoute} className="font-extrabold text-slate-900 text-[14px] sm:text-[15px] truncate hover:underline">
+                          {getDisplayName(selectedContact)}
+                        </Link>
                       </div>
-                      <div className="flex items-center gap-2">
-                        <p className={"text-[11.5px] font-medium " + (selectedContact.isOnline ? "text-green-600" : "text-slate-500")}>
-                          {selectedContact.isOnline ? "Online now" : formatLastSeen(selectedContact.lastSeen)}
-                        </p>
-                        <span className="text-slate-300 text-[10px]">•</span>
-                        <Link to={selectedContact.role === 'employer' ? "/employer/" + selectedContact._id : "/candidate/" + selectedContact._id} className="text-[11px] text-blue-600 hover:text-blue-800 transition font-bold block truncate">View profile</Link>
-                      </div>
+                      
+                      {isTyping ? (
+                         <p className="text-blue-500 italic font-bold text-[11px] sm:text-[12px] tracking-wide animate-pulse">typing...</p>
+                      ) : (
+                         <div className="flex items-center gap-1.5">
+                           {selectedContact.isOnline ? <span className="w-2 h-2 rounded-full bg-green-500 shadow-sm flex-shrink-0"></span> : null}
+                           <p className={"text-[11px] sm:text-[12px] font-medium truncate " + statusTextColorClass}>
+                             {headerDisplayStatus}
+                           </p>
+                         </div>
+                      )}
                     </div>
                   </div>
                   
-                  <div className="relative flex-shrink-0">
+                  {/* Menu Button */}
+                  <div className="relative flex-shrink-0 ml-2">
                     <button onClick={() => setShowMenu(!showMenu)} className="p-2 text-slate-500 hover:bg-slate-100 rounded-full transition focus:outline-none">
                       <IconMenu />
                     </button>
 
                     {showMenu ? (
-                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-xl py-2 z-[60] border border-slate-100">
+                      <div className="absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-xl py-2 z-[60] border border-slate-100">
                         <button onClick={handleToggleBlockUser} className="w-full text-left px-4 py-2.5 text-[15px] hover:bg-slate-50 transition flex items-center gap-3">
                           {isBlocked ? (
                             <>
@@ -558,18 +633,44 @@ function Message() {
                     ) : null}
                   </div>
                 </div>
-
                 {/* MESSAGES DISPLAY AREA */}
-                <div ref={chatContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-8 py-6 flex flex-col gap-2 w-full relative z-10" onMouseLeave={() => setActiveBubbleMenu(null)}>
-                  {loadingMessages ? (
-                    <p className="text-center text-slate-500 mt-4 text-[13px] font-medium uppercase tracking-widest bg-slate-100 w-max mx-auto px-3 py-1 rounded-lg">Syncing...</p>
-                  ) : messages.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center mt-6">
-                       <p className="text-center text-slate-500 text-[13px] bg-slate-100 px-4 py-2 rounded-lg w-max">
-                         Messages are end-to-end encrypted.
+                <div ref={chatContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden px-4 sm:px-8 py-6 flex flex-col gap-2 w-full relative z-10 bg-white" onMouseLeave={() => setActiveBubbleMenu(null)}>
+                  
+                  {/* LARGE PROFILE INTRO BLOCK AT THE TOP */}
+                  <div className="flex flex-col items-center justify-center mt-6 mb-10 px-2 text-center">
+                    <Link to={profileRoute} className="h-24 w-24 sm:h-28 sm:w-28 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500 text-3xl overflow-hidden shadow-sm mb-3 hover:opacity-80 transition cursor-pointer">
+                       {getAvatarSrc(selectedContact) ? <img src={getAvatarSrc(selectedContact)} alt="avatar" className="h-full w-full object-cover" /> : getAvatarFallback(selectedContact)}
+                    </Link>
+                    <Link to={profileRoute} className="text-xl sm:text-2xl font-extrabold text-slate-900 mb-1 hover:underline">
+                      {getDisplayName(selectedContact)}
+                    </Link>
+                    <p className="text-slate-500 text-[13px] sm:text-sm font-medium mb-4">
+                       {selectedContact.role === 'employer' ? "Employer on TalexaJobs" : "Candidate on TalexaJobs"}
+                       {contactLocation !== "" ? " - Lives in " + contactLocation : ""}
+                    </p>
+                    
+                    <Link 
+                       to={profileRoute} 
+                       className="px-5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-900 font-bold rounded-xl text-[13px] sm:text-sm transition shadow-sm"
+                    >
+                       View profile
+                    </Link>
+                    
+                    <div className="mt-8 bg-slate-50 rounded-xl p-4 max-w-sm w-full text-center border border-slate-100">
+                       <p className="text-slate-700 text-xs font-bold mb-1 flex items-center justify-center gap-1.5">
+                         <svg className="w-3.5 h-3.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" /></svg>
+                         End-to-end encrypted
+                       </p>
+                       <p className="text-slate-500 text-[11px] leading-relaxed">
+                         Messages are secured with end-to-end encryption. Only you and this user can read them.
                        </p>
                     </div>
-                  ) : (
+                  </div>
+
+                  {/* ACTUAL MESSAGES MAP */}
+                  {loadingMessages ? (
+                    <p className="text-center text-slate-500 mt-4 text-[13px] font-medium uppercase tracking-widest bg-slate-100 w-max mx-auto px-3 py-1 rounded-lg">Syncing...</p>
+                  ) : messages.length === 0 ? null : (
                     messages.map(function(msg) {
                       let isMe = false;
                       if (msg.sender === myId) { isMe = true; }
@@ -579,7 +680,7 @@ function Message() {
                       if (isMe) {
                          bubbleClass += "bg-blue-600 text-white rounded-xl rounded-tr-sm ml-auto ";
                       } else {
-                         bubbleClass += "bg-white text-slate-800 border border-slate-200 rounded-xl rounded-tl-sm mr-auto ";
+                         bubbleClass += "bg-slate-100 text-slate-800 rounded-xl rounded-tl-sm mr-auto ";
                       }
 
                       return (

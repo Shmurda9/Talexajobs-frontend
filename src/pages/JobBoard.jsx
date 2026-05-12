@@ -20,7 +20,6 @@ function JobBoard() {
   const [currentPage, setCurrentPage] = useState(1);
   const JOBS_PER_PAGE = 5; 
 
-  // 🚨 NEW PREMIUM COVER LETTER STATES
   const [showApplyModal, setShowApplyModal] = useState(false);
   const [coverLetterText, setCoverLetterText] = useState("");
   const [applyingJobId, setApplyingJobId] = useState(null);
@@ -110,7 +109,6 @@ function JobBoard() {
     }
   };
 
-  // 🚨 NEW PREMIUM APPLY INITIATION (NO MORE BLACK BOX)
   const initiateApply = (jobId) => {
     if (token == null || token == "") {
       toast.error("You must be logged in to apply for jobs.");
@@ -135,7 +133,6 @@ function JobBoard() {
     setShowApplyModal(true);
   };
 
-  // 🚨 NEW SUBMIT FUNCTION FOR THE MODAL
   const submitApplication = async () => {
     if (!applyingJobId) return;
 
@@ -183,6 +180,7 @@ function JobBoard() {
     navigate("/messages", { state: { prefilledContact: job.user } });
   };
 
+  // 🚨 THE FULLY FIXED FILTERING ENGINE
   const filteredJobs = jobs.filter((job) => {
     let isApproved = false;
     if (job.adminStatus == "approved") { isApproved = true; }
@@ -194,12 +192,15 @@ function JobBoard() {
 
     if (searchTerm && searchTerm.length > 0) {
       const term = searchTerm.toLowerCase();
-      const titleMatch = job.title ? job.title.toLowerCase().includes(term) : false;
-      const descMatch = job.description ? job.description.toLowerCase().includes(term) : false;
-      let compMatch = false;
+      let titleMatch = false;
+      if (job.title && job.title.toLowerCase().includes(term)) { titleMatch = true; }
       
+      let descMatch = false;
+      if (job.description && job.description.toLowerCase().includes(term)) { descMatch = true; }
+      
+      let compMatch = false;
       if (job.user && job.user.employerInfo && job.user.employerInfo.companyName) {
-        compMatch = job.user.employerInfo.companyName.toLowerCase().includes(term);
+        if (job.user.employerInfo.companyName.toLowerCase().includes(term)) { compMatch = true; }
       }
       
       if (titleMatch == false && descMatch == false && compMatch == false) return false;
@@ -216,9 +217,19 @@ function JobBoard() {
         if (jobLoc.includes(locationFilter.toLowerCase()) == false) return false;
     }
     
+    // 🚨 STRICT REMOTE FILTER LOGIC
     if (remoteOnly == true) {
         const jobLoc = job.location ? job.location.toLowerCase() : "";
-        if (job.isRemote == false && jobLoc.includes("remote") == false) return false;
+        let isTaggedRemote = false;
+
+        // Check if explicit remote boolean is true
+        if (job.isRemote === true) { isTaggedRemote = true; }
+        // Check if "remote" is in the text
+        if (jobLoc.includes("remote")) { isTaggedRemote = true; }
+        // Check if "work from home" is in the text
+        if (jobLoc.includes("work from home")) { isTaggedRemote = true; }
+
+        if (isTaggedRemote == false) { return false; } // If none match, strictly hide the job!
     }
     
     if (minSalary && minSalary.length > 0) {
@@ -226,9 +237,10 @@ function JobBoard() {
       const jobSalary = Number(job.salary);
       if (jobSalary == null || jobSalary < salaryTarget) return false;
     }
+    
     return true;
   });
-
+  
   const getRecommendedJobs = () => {
     let isJobSeeker = false;
     if (currentUser && currentUser.role == "jobSeeker" && currentUser.candidateInfo) {
@@ -304,7 +316,7 @@ function JobBoard() {
     const jobLocStr = job.location ? job.location.toLowerCase() : "";
     
     let showRemoteBadge = false;
-    if (job.isRemote == true || jobLocStr.includes("remote") == true) {
+    if (job.isRemote == true || jobLocStr.includes("remote") == true || jobLocStr.includes("work from home") == true) {
         showRemoteBadge = true;
     }
 
@@ -339,7 +351,7 @@ function JobBoard() {
         );
       }
     }
-
+    
     return (
       <div key={uniqueKey} className={cardClass}>
         {userRole == "admin" ? (
@@ -463,8 +475,6 @@ function JobBoard() {
                 <label className="block text-xs sm:text-sm font-bold text-slate-700 mb-2">Category</label>
                 <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)} className="block w-full py-2.5 sm:py-3 px-3 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-600 focus:border-transparent transition bg-slate-50 hover:bg-white shadow-sm font-medium">
                   <option value="">All Categories</option>
-                  
-                  {/* 🚨 THE 42 NEW PREMIUM CATEGORIES (Focused on Accessible/Remote) */}
                   <option value="Customer Support">Customer Support</option>
                   <option value="Virtual Assistant">Virtual Assistant</option>
                   <option value="Data Entry">Data Entry</option>
@@ -509,7 +519,6 @@ function JobBoard() {
                 </select>
               </div>
               
-              {/* 🚨 PREMIUM REMOTE TOGGLE FIX */}
               <div 
                 className={"mb-2 flex items-center p-3 sm:p-3.5 rounded-xl border cursor-pointer transition shadow-sm " + (remoteOnly ? "bg-purple-50 border-purple-200" : "bg-slate-50 border-slate-200 hover:border-blue-200 hover:bg-blue-50")} 
                 onClick={() => {
@@ -593,7 +602,6 @@ function JobBoard() {
         </div>
       </div>
 
-      {/* 🚨 EXISTING DETAILS MODAL */}
       {selectedJob ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-900 bg-opacity-60 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto border border-slate-200 flex flex-col relative">
@@ -684,7 +692,6 @@ function JobBoard() {
         </div>
       ) : null}
 
-      {/* 🚨 NEW PREMIUM COVER LETTER MODAL */}
       {showApplyModal ? (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900 bg-opacity-70 backdrop-blur-sm transition-opacity">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col overflow-hidden">
