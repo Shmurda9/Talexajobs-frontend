@@ -25,13 +25,13 @@ import GlobalChatListener from './components/GlobalChatListener';
 import Message from './pages/Message';
 import TermsOfService from './pages/TermsOfService';
 import PrivacyPolicy from './pages/PrivacyPolicy';
-// 🚨 RESTORED: Both of your employer pages are now properly imported!
 import EmployerDashboard from './pages/EmployerDashboard';
 import ManageApplicants from './pages/ManageApplicants';
 import Settings from './pages/Settings';
 import About from './pages/About';
 import ChangePassword from './pages/ChangePassword';
 import EmployerProfile from './pages/EmployerProfile';
+import EmployerSetup from './pages/EmployerSetup';
 
 function App() {
   return (
@@ -81,8 +81,6 @@ function App() {
             <Route path="/candidate/:id" element={<CandidateProfile />} />
             <Route path="/messages" element={<Message />} />
             
-
-            {/* 🚨 RESTORED: All three dashboards are properly routed! */}
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/employer-dashboard" element={<EmployerDashboard />} />
             <Route path="/manage-applicants" element={<ManageApplicants />} />
@@ -92,6 +90,7 @@ function App() {
             <Route path="/about" element={<About />} />
             <Route path="/change-password" element={<ChangePassword />} />
             <Route path="/user-profile/:id" element={<EmployerProfile />} />
+            <Route path="/employer-setup" element={<EmployerSetup />} />
           </Routes>
         </div>
         

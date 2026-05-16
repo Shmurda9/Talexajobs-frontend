@@ -16,9 +16,11 @@ function ProfileSetup() {
   const [profilePicPreview, setProfilePicPreview] = useState(null);
 
   const [candidateData, setCandidateData] = useState({
+    contactEmail: "",
     headline: "",
     bio: "",
     location: "",
+    portfolioLink: "",
     salaryExpectation: "",
     openToWork: true,
     isContactPublic: false,
@@ -59,9 +61,11 @@ function ProfileSetup() {
       if (user.role === "jobSeeker" && user.candidateInfo) {
         if (user.candidateInfo.headline) setIsUpdating(true);
         setCandidateData({
+          contactEmail: user.candidateInfo.contactEmail || "",
           headline: user.candidateInfo.headline || "",
           bio: user.candidateInfo.bio || "",
           location: user.candidateInfo.location || "",
+          portfolioLink: user.candidateInfo.portfolioLink || user.candidateInfo.portfolioUrl || "",
           salaryExpectation: user.candidateInfo.salaryExpectation || "",
           openToWork: user.candidateInfo.openToWork ?? true,
           isContactPublic: user.candidateInfo.isContactPublic || false,
@@ -158,7 +162,6 @@ function ProfileSetup() {
       if (profilePicFile) formData.append("profilePicture", profilePicFile);
 
       if (userRole === "jobSeeker") {
-        // 🚨 FIX: Safe string concatenation to avoid copy-paste errors
         const formattedCandidateData = {
           ...candidateData,
           skills: candidateData.skills.map(skill => 
@@ -258,13 +261,19 @@ function ProfileSetup() {
 
                       <div>
                         <label className="block text-sm font-extrabold text-slate-700 mb-2 tracking-wide">Professional Title</label>
-                        <input type="text" name="headline" value={candidateData.headline} onChange={handleCandidateChange} placeholder="e.g. Registered Nurse, Retail Manager, Civil Engineer" required className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
+                        <input type="text" name="headline" value={candidateData.headline} onChange={handleCandidateChange} required className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
+                      </div>
+
+                      <div>
+                        <label className="block text-sm font-extrabold text-slate-700 mb-2 tracking-wide">Public Contact Email</label>
+                        <input type="email" name="contactEmail" value={candidateData.contactEmail} onChange={handleCandidateChange} required className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
                       </div>
                       
                       <div>
                         <label className="block text-sm font-extrabold text-slate-700 mb-2 tracking-wide">Location</label>
-                        <input type="text" name="location" value={candidateData.location} onChange={handleCandidateChange} placeholder="e.g. City, State, Country" required className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
+                        <input type="text" name="location" value={candidateData.location} onChange={handleCandidateChange} required className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
                       </div>
+                      
                       <div className="flex items-center justify-between bg-slate-50 p-5 rounded-xl border border-slate-200 shadow-sm">
                         <div>
                           <h4 className="text-sm font-extrabold text-slate-900">Open to Work</h4>
@@ -285,13 +294,13 @@ function ProfileSetup() {
                       
                       <div>
                         <label className="block text-sm font-extrabold text-slate-700 mb-2 tracking-wide">Bio Summary</label>
-                        <textarea name="bio" value={candidateData.bio} onChange={handleCandidateChange} rows="4" placeholder="Briefly describe your background, experience, and the kind of roles you are looking for..." className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm"></textarea>
+                        <textarea name="bio" value={candidateData.bio} onChange={handleCandidateChange} rows="4" className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm"></textarea>
                       </div>
 
                       <div>
                         <label className="block text-sm font-extrabold text-slate-700 mb-2 tracking-wide">Professional Skills</label>
                         <div className="flex flex-col sm:flex-row gap-3 mb-4">
-                          <input type="text" value={newSkill.name} onChange={(e) => setNewSkill({...newSkill, name: e.target.value})} placeholder="e.g. Customer Service, Data Analysis, Machine Operation" className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
+                          <input type="text" value={newSkill.name} onChange={(e) => setNewSkill({...newSkill, name: e.target.value})} className="flex-1 px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
                           <div className="flex gap-2">
                             <select value={newSkill.level} onChange={(e) => setNewSkill({...newSkill, level: e.target.value})} className="flex-1 sm:w-40 px-3 py-3 bg-slate-50 border border-slate-200 rounded-xl font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm">
                               <option value="Beginner">Beginner</option>
@@ -303,7 +312,6 @@ function ProfileSetup() {
                         </div>
                         
                         <div className="flex flex-wrap gap-2 mt-4">
-                          {/* 🚨 FIX: Safely parse both Backend Strings and Frontend Objects */}
                           {candidateData.skills.map((skill, index) => {
                             const isObject = typeof skill === 'object';
                             const skillName = isObject ? skill.name : skill.split(' - ')[0];
@@ -338,28 +346,28 @@ function ProfileSetup() {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-xs font-bold text-slate-500 mb-1">Job Title</label>
-                              <input type="text" placeholder="Your Job Title" value={newWork.jobTitle} onChange={(e) => setNewWork({...newWork, jobTitle: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                              <input type="text" value={newWork.jobTitle} onChange={(e) => setNewWork({...newWork, jobTitle: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                             </div>
                             <div>
                               <label className="block text-xs font-bold text-slate-500 mb-1">Company / Organization</label>
-                              <input type="text" placeholder="Company Name" value={newWork.companyName} onChange={(e) => setNewWork({...newWork, companyName: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                              <input type="text" value={newWork.companyName} onChange={(e) => setNewWork({...newWork, companyName: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                             </div>
                           </div>
                           
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-xs font-bold text-slate-500 mb-1">Start Date</label>
-                              <input type="text" placeholder="e.g. Jan 2021" value={newWork.startDate} onChange={(e) => setNewWork({...newWork, startDate: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                              <input type="text" value={newWork.startDate} onChange={(e) => setNewWork({...newWork, startDate: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                             </div>
                             <div>
                               <label className="block text-xs font-bold text-slate-500 mb-1">End Date</label>
-                              <input type="text" placeholder="e.g. Present, or Dec 2023" value={newWork.endDate} onChange={(e) => setNewWork({...newWork, endDate: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                              <input type="text" value={newWork.endDate} onChange={(e) => setNewWork({...newWork, endDate: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                               </div>
                           </div>
                           
                           <div>
                             <label className="block text-xs font-bold text-slate-500 mb-1">Description (Optional)</label>
-                            <textarea placeholder="Briefly describe your responsibilities and achievements..." value={newWork.description} onChange={(e) => setNewWork({...newWork, description: e.target.value})} rows="2" className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
+                            <textarea value={newWork.description} onChange={(e) => setNewWork({...newWork, description: e.target.value})} rows="2" className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"></textarea>
                           </div>
                           <button type="button" onClick={addWork} className="w-full py-2.5 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition shadow-md flex items-center justify-center gap-2">
                             <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6" /></svg>
@@ -394,11 +402,11 @@ function ProfileSetup() {
                           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div>
                               <label className="block text-xs font-bold text-slate-500 mb-1">Institution / School Name</label>
-                              <input type="text" placeholder="Name of School or Institution" value={newEdu.schoolName} onChange={(e) => setNewEdu({...newEdu, schoolName: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                              <input type="text" value={newEdu.schoolName} onChange={(e) => setNewEdu({...newEdu, schoolName: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                               </div>
                             <div>
                               <label className="block text-xs font-bold text-slate-500 mb-1">Degree / Certificate</label>
-                              <input type="text" placeholder="Degree or Certificate Name" value={newEdu.degree} onChange={(e) => setNewEdu({...newEdu, degree: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
+                              <input type="text" value={newEdu.degree} onChange={(e) => setNewEdu({...newEdu, degree: e.target.value})} className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" />
                             </div>
                           </div>
                           <button type="button" onClick={addEdu} className="w-full py-2.5 bg-slate-900 text-white font-bold rounded-lg hover:bg-slate-800 transition shadow-md flex items-center justify-center gap-2">
@@ -433,14 +441,20 @@ function ProfileSetup() {
                       <h3 className="text-lg font-bold text-slate-800 border-b border-slate-100 pb-2">Final Details</h3>
                       
                       <div>
+                        <label className="block text-sm font-extrabold text-slate-700 mb-2 tracking-wide">Professional Link (Portfolio, LinkedIn, GitHub)</label>
+                        <input type="url" name="portfolioLink" value={candidateData.portfolioLink} onChange={handleCandidateChange} className="appearance-none block w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
+                      </div>
+
+                      <div>
                         <label className="block text-sm font-extrabold text-slate-700 mb-2 tracking-wide">Expected Salary (Optional)</label>
                         <div className="relative">
                           <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                             <span className="text-slate-400 font-bold">$</span>
                           </div>
-                          <input type="text" name="salaryExpectation" placeholder="e.g. 50,000" value={candidateData.salaryExpectation} onChange={handleCandidateChange} className="appearance-none block w-full pl-8 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
+                          <input type="text" name="salaryExpectation" value={candidateData.salaryExpectation} onChange={handleCandidateChange} className="appearance-none block w-full pl-8 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" />
                         </div>
                       </div>
+                      
                       <div className="bg-slate-50 border-2 border-dashed border-slate-300 hover:border-blue-400 p-8 rounded-2xl text-center transition-colors group relative">
                         <div className="w-16 h-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
                           <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>

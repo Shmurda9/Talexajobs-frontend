@@ -72,7 +72,7 @@ function CandidateProfile() {
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center">
-        <p className="text-slate-500 font-bold animate-pulse">Loading Profile...</p>
+        <p className="text-slate-500 font-bold tracking-wide animate-pulse">Loading Candidate Dossier...</p>
       </div>
     );
   }
@@ -90,116 +90,157 @@ function CandidateProfile() {
     );
   }
 
+  // DATA EXTRACTION & STRICT FALLBACKS
   const cInfo = candidate.candidateInfo ? candidate.candidateInfo : {};
   const avatarUrl = getAvatarSrc();
   
-  const hasBio = !!cInfo.bio;
+  const rawBio = cInfo.bio || "";
+  const displayBio = rawBio.trim() !== "" ? rawBio : "This candidate hasn't added a professional summary yet.";
+  
   const hasExperience = cInfo.workExperience && cInfo.workExperience.length > 0;
   const hasEducation = cInfo.education && cInfo.education.length > 0;
   const hasSkills = cInfo.skills && cInfo.skills.length > 0;
 
-  return (
-    <div className="min-h-screen bg-slate-50 py-6 sm:py-10 font-sans pb-20">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
-        
-        {/* Navigation Back */}
-        <button onClick={() => navigate(-1)} className="mb-4 sm:mb-6 flex items-center text-slate-500 hover:text-slate-800 transition font-bold text-xs sm:text-sm bg-white border border-slate-200 px-4 py-2 rounded-lg shadow-sm w-fit">
-          <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Back to previous page
-        </button>
+  const headline = cInfo.headline || "Professional Candidate";
+  const location = cInfo.location || "Location not specified";
+  const portfolioLink = cInfo.portfolioLink || cInfo.portfolioUrl || "";
+  
+  const contactEmail = cInfo.contactEmail && cInfo.contactEmail.trim() !== "" ? cInfo.contactEmail : "Contact not specified";
 
-        {/* PROFILE HEADER CARD */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6 sm:mb-8 relative">
-          <div className="bg-gradient-to-tr from-blue-700 via-blue-600 to-indigo-600 h-32 sm:h-40 relative">
-             <div className="absolute inset-0 opacity-20 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-          </div>
+  return (
+    <div className="min-h-screen bg-slate-50 pb-20 font-sans">
+      
+      {/* HERO SECTION: Premium Deep Blue/Slate matching Employer & Navbar */}
+      <div className="relative h-40 sm:h-64 bg-slate-900 overflow-hidden">
+        <div className="absolute inset-0 opacity-40 bg-gradient-to-tr from-blue-800 via-slate-900 to-indigo-900"></div>
+        <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-16 sm:-mt-20 relative z-10">
+        
+        {/* PREMIUM LEFT-ALIGNED HEADER CARD */}
+        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-8 md:p-10 mb-6 sm:mb-8">
           
-          <div className="px-5 sm:px-8 md:px-10 pb-6 sm:pb-8 relative">
-            
-            {/* 🚨 FIXED MARGINS HERE: Text stays low, only avatar floats up! */}
-            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between mb-4 sm:mb-6 gap-4">
+          <button onClick={() => navigate(-1)} className="mb-4 sm:mb-6 flex items-center text-slate-500 hover:text-slate-900 font-bold text-xs sm:text-sm transition-all group w-fit">
+            <svg className="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            Back
+          </button>
+
+          <div className="flex flex-col md:flex-row items-center md:items-end justify-between gap-4 sm:gap-6 mb-6 sm:mb-8 border-b border-slate-100 pb-6 sm:pb-8">
+            <div className="flex flex-col md:flex-row items-center gap-4 sm:gap-6 w-full md:w-auto text-center md:text-left">
               
-              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 w-full sm:w-auto text-center sm:text-left">
-                
-                <div className="-mt-14 sm:-mt-16 h-24 w-24 sm:h-32 sm:w-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-100 flex items-center justify-center flex-shrink-0 z-10 relative">
-                  {avatarUrl && !imgError ? (
-                     <img 
-                       src={avatarUrl} 
-                       alt="Profile" 
-                       className="h-full w-full object-cover" 
-                       onError={() => setImgError(true)}
-                     />
-                  ) : (
-                    <span className="font-extrabold text-slate-400 text-4xl sm:text-5xl">{getAvatarFallback()}</span>
-                  )}
-                </div>
-                
-                <div className="mt-2 sm:mt-0 mb-1 sm:mb-2 flex-1 min-w-0 pt-2 sm:pt-0">
-                  <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 break-words leading-tight">{candidate.fullName}</h1>
-                  <p className="text-base sm:text-lg text-blue-600 font-extrabold mt-1 truncate">{cInfo.headline ? cInfo.headline : "Professional Candidate"}</p>
-                </div>
+              {/* AVATAR */}
+              <div className="h-20 w-20 sm:h-28 sm:w-28 rounded-full border-4 border-white shadow-md bg-slate-50 flex items-center justify-center overflow-hidden flex-shrink-0">
+                {avatarUrl && !imgError ? (
+                  <img 
+                    src={avatarUrl} 
+                    alt={candidate.fullName} 
+                    className="h-full w-full object-cover" 
+                    onError={() => setImgError(true)} 
+                  />
+                ) : (
+                  <span className="font-extrabold text-slate-400 text-3xl sm:text-5xl">{getAvatarFallback()}</span>
+                )}
               </div>
               
-              <div className="mt-3 sm:mt-0 w-full sm:w-auto flex-shrink-0 z-10 pt-2 sm:pt-0">
-                <button 
-                  onClick={handleMessageRedirect} 
-                  className="w-full bg-blue-600 text-white font-extrabold py-3.5 px-8 rounded-xl hover:bg-blue-700 transition shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03-8-9-8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                  Message {candidate.fullName.split(' ')[0]}
-                </button>
+              {/* USER INFO */}
+              <div className="flex-1 min-w-0 max-w-full">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight break-words">{candidate.fullName}</h1>
+                <div className="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-2 sm:gap-3 mt-2 sm:mt-3 max-w-full">
+                  <span className="bg-blue-50 text-blue-700 font-bold text-[10px] sm:text-xs px-2.5 sm:px-3 py-1.5 rounded-md uppercase tracking-widest border border-blue-100 truncate max-w-full inline-block">
+                    {headline}
+                  </span>
+                </div>
               </div>
             </div>
 
-            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-6 mt-6 sm:mt-8 border-t border-slate-100 pt-5 sm:pt-6">
-              <div className="flex items-center text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 w-fit max-w-full">
-                <svg className="w-4 h-4 mr-2 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v10a2 2 0 002 2z" /></svg>
-                <span className="font-bold text-xs sm:text-sm truncate">{candidate.email}</span>
+            {/* ACTION BUTTONS & BADGE (Perfectly Stacked) */}
+            <div className="flex-shrink-0 mt-4 md:mt-0 w-full md:w-auto flex flex-col items-center md:items-end gap-2">
+              
+              {/* STATUS BADGE */}
+              {cInfo.openToWork !== false && (
+                <div className="flex items-center gap-1.5 bg-emerald-50 text-emerald-600 border border-emerald-100 px-3 py-1.5 rounded-xl shadow-sm w-fit mb-1">
+                   <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" /></svg>
+                   <span className="font-black uppercase text-[9px] sm:text-[10px] tracking-widest">Open to Work</span>
                 </div>
-              {cInfo.location && (
-                <div className="flex items-center text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 w-fit max-w-full">
-                  <svg className="w-4 h-4 mr-2 text-slate-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  <span className="font-bold text-xs sm:text-sm truncate">{cInfo.location}</span>
-                </div>
+              )}
+              
+              {/* ACTION BUTTON */}
+              <button onClick={handleMessageRedirect} className="bg-blue-600 text-white font-bold py-2.5 sm:py-3 px-6 sm:px-8 rounded-xl hover:bg-blue-700 transition shadow-sm text-sm sm:text-base w-full md:w-auto flex items-center justify-center gap-2">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03-8-9-8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
+                Message {candidate.fullName.split(' ')[0]}
+              </button>
+            </div>
+          </div>
+
+          {/* QUICK STATS GRID (Balloons removed, 3-column Premium layout applied) */}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
+            <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100 min-w-0">
+              <p className="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1.5 truncate">
+                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                Location
+              </p>
+              {location !== "Location not specified" && location !== "" ? (
+                 <p className="font-extrabold text-slate-900 text-xs sm:text-sm md:text-base truncate" title={location}>{location}</p>
+              ) : (
+                 <p className="font-bold text-slate-400 text-xs sm:text-sm md:text-base italic truncate">Not specified</p>
+              )}
+            </div>
+            
+            <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100 min-w-0">
+              <p className="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1.5 truncate">
+                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v12a2 2 0 002 2z" /></svg>
+                Member Since
+              </p>
+              <p className="font-extrabold text-slate-900 text-xs sm:text-sm md:text-base truncate">{new Date(candidate.createdAt).getFullYear()}</p>
+            </div>
+            
+            <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100 min-w-0 col-span-2 md:col-span-1">
+              <p className="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1 flex items-center gap-1.5 truncate">
+                <svg className="w-3 h-3 sm:w-3.5 sm:h-3.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v10a2 2 0 002 2z" /></svg>
+                Public Contact
+              </p>
+              {contactEmail !== "Contact not specified" ? (
+                 <p className="font-extrabold text-slate-900 text-xs sm:text-sm md:text-base truncate">{contactEmail}</p>
+              ) : (
+                 <p className="font-bold text-slate-400 text-xs sm:text-sm md:text-base italic truncate">Not specified</p>
               )}
             </div>
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
+        {/* MAIN CONTENT GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8">
           
-          {/* LEFT COLUMN: Bio, Work, Education */}
-          <div className="md:col-span-2 space-y-5 sm:space-y-6">
+          <div className="lg:col-span-2 space-y-5 sm:space-y-6">
             
-            {hasBio && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-8">
-                <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-widest mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-                  Professional Summary
-                </h3>
-                <p className="text-sm sm:text-base text-slate-600 leading-relaxed whitespace-pre-wrap font-medium">
-                  {cInfo.bio}
-                </p>
-              </div>
-            )}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 md:p-8">
+              <h3 className="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-widest mb-3 sm:mb-4 border-b border-slate-100 pb-2.5 sm:pb-3 flex items-center gap-2">
+                <svg className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
+                Professional Summary
+              </h3>
+              <p className={`leading-relaxed text-xs sm:text-sm whitespace-pre-wrap font-medium ${rawBio.trim() === "" ? "text-slate-400 italic" : "text-slate-600"}`}>
+                {displayBio}
+              </p>
+            </div>
 
             {hasExperience && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-8">
-                <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-widest mb-6 border-b border-slate-100 pb-3 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2-2v10a2 2 0 002 2z" /></svg>
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 md:p-8">
+                <h3 className="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2.5 sm:pb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2-2v10a2 2 0 002 2z" /></svg>
                   Work Experience
                 </h3>
                 
                 <div className="space-y-6">
                   {cInfo.workExperience.map((exp, index) => (
                     <div key={index} className="relative pl-5 sm:pl-6 border-l-2 border-slate-100">
-                      <div className="absolute w-3.5 h-3.5 bg-indigo-500 rounded-full -left-[9px] top-1.5 ring-4 ring-white"></div>
-                      <h4 className="font-bold text-slate-900 text-base sm:text-lg">{exp.jobTitle}</h4>
-                      <p className="text-sm font-bold text-indigo-600 mb-2">
+                      <div className="absolute w-3 h-3 sm:w-3.5 sm:h-3.5 bg-indigo-500 rounded-full -left-[7px] sm:-left-[9px] top-1 sm:top-1.5 ring-4 ring-white"></div>
+                      <h4 className="font-bold text-slate-900 text-sm sm:text-lg">{exp.jobTitle}</h4>
+                      <p className="text-xs sm:text-sm font-bold text-indigo-600 mb-1 sm:mb-2">
                         {exp.companyName} <span className="text-slate-400 font-medium ml-1 sm:ml-2 block sm:inline">• {exp.startDate} - {exp.endDate}</span>
                       </p>
                       {exp.description && (
-                        <p className="text-sm text-slate-600 leading-relaxed font-medium">{exp.description}</p>
+                        <p className="text-xs sm:text-sm text-slate-600 leading-relaxed font-medium">{exp.description}</p>
                       )}
                     </div>
                   ))}
@@ -208,47 +249,40 @@ function CandidateProfile() {
             )}
 
             {hasEducation && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-8">
-                <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-widest mb-6 border-b border-slate-100 pb-3 flex items-center gap-2">
-                  <svg className="w-5 h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>
+              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6 md:p-8">
+                <h3 className="text-xs sm:text-sm font-black text-slate-900 uppercase tracking-widest mb-4 border-b border-slate-100 pb-2.5 sm:pb-3 flex items-center gap-2">
+                  <svg className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l9-5-9-5-9 5 9 5z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 14l6.16-3.422a12.083 12.083 0 01.665 6.479A11.952 11.952 0 0012 20.055a11.952 11.952 0 00-6.824-2.998 12.078 12.078 0 01.665-6.479L12 14z" /></svg>
                   Education & Training
                 </h3>
                 
                 <div className="space-y-6">
                   {cInfo.education.map((edu, index) => (
                     <div key={index} className="relative pl-5 sm:pl-6 border-l-2 border-slate-100">
-                      <div className="absolute w-3.5 h-3.5 bg-emerald-500 rounded-full -left-[9px] top-1.5 ring-4 ring-white"></div>
-                      <h4 className="font-bold text-slate-900 text-base sm:text-lg">{edu.degree}</h4>
-                      <p className="text-sm font-bold text-slate-500 mt-0.5">{edu.schoolName}</p>
+                      <div className="absolute w-3 h-3 sm:w-3.5 sm:h-3.5 bg-emerald-500 rounded-full -left-[7px] sm:-left-[9px] top-1 sm:top-1.5 ring-4 ring-white"></div>
+                      <h4 className="font-bold text-slate-900 text-sm sm:text-lg">{edu.degree}</h4>
+                      <p className="text-xs sm:text-sm font-bold text-slate-500 mt-0.5">{edu.schoolName}</p>
                     </div>
                   ))}
                 </div>
               </div>
             )}
-
-            {!hasBio && !hasExperience && !hasEducation && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 text-center">
-                <p className="text-slate-500 font-bold">This candidate has not provided a bio, work experience, or education history.</p>
-              </div>
-            )}
           </div>
 
-          {/* RIGHT COLUMN: Skills & Requirements */}
-          <div className="space-y-5 sm:space-y-6">
+          <div className="lg:col-span-1 space-y-5 sm:space-y-6">
             
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
-              <h3 className="text-sm sm:text-base font-black text-slate-900 uppercase tracking-widest mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <svg className="w-5 h-5 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
-                Professional Skills
-              </h3>
+              <h5 className="text-[10px] sm:text-xs font-black text-slate-900 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
+                 <svg className="w-4 h-4 text-amber-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
+                 Professional Skills
+              </h5>
               
               {hasSkills ? (
                 <div className="flex flex-wrap gap-2">
                   {cInfo.skills.map((skill, index) => (
-                    <span key={index} className="bg-amber-50 text-amber-800 border border-amber-200 px-3 py-2 rounded-lg text-xs sm:text-sm font-bold shadow-sm flex items-center gap-2">
+                    <span key={index} className="bg-slate-50 text-slate-700 border border-slate-200 px-3 py-2 rounded-xl text-[10px] sm:text-xs font-bold shadow-sm flex items-center gap-2">
                       {typeof skill === 'object' ? skill.name : skill}
                       {typeof skill === 'object' && skill.level && (
-                        <span className="text-[9px] bg-white text-amber-600 px-1.5 py-0.5 rounded uppercase tracking-wider">
+                        <span className="text-[8px] sm:text-[9px] bg-white text-slate-500 px-1.5 py-0.5 rounded uppercase tracking-wider border border-slate-100">
                           {skill.level}
                         </span>
                       )}
@@ -256,37 +290,59 @@ function CandidateProfile() {
                   ))}
                 </div>
               ) : (
-                <p className="text-slate-500 text-sm font-medium">No skills listed yet.</p>
+                <div className="w-full text-center text-slate-400 font-medium text-xs sm:text-sm italic bg-slate-50 py-2.5 sm:py-3 rounded-xl border border-slate-100">
+                  No skills listed
+                </div>
               )}
             </div>
 
-            {/* Requirements & Resume */}
             <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <svg className="w-5 h-5 text-rose-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                Requirements
-              </h3>
+              <h5 className="text-[10px] sm:text-xs font-black text-slate-900 uppercase tracking-widest mb-3 sm:mb-4 flex items-center gap-2">
+                 <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
+                 Requirements & Links
+              </h5>
               
-              <div className="space-y-5">
+              <div className="space-y-4">
                 <div className="bg-slate-50 p-4 rounded-xl border border-slate-100">
-                  <p className="text-[10px] sm:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1">Expected Salary</p>
-                  <p className="font-extrabold text-slate-900 text-sm sm:text-base">
-                    {cInfo.salaryExpectation ? "$" + cInfo.salaryExpectation.toLocaleString() : "Negotiable"}
+                  <p className="text-[9px] sm:text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-1">Expected Salary</p>
+                  <p className="font-extrabold text-slate-900 text-xs sm:text-sm">
+                    {cInfo.salaryExpectation ? "$" + cInfo.salaryExpectation.toLocaleString() : <span className="text-slate-400 italic font-bold">Negotiable</span>}
                   </p>
                 </div>
                 
-                {cInfo.resumeUrl && (
-                  <div className="pt-2">
+                <div className="pt-1">
+                  {portfolioLink ? (
+                    <a 
+                      href={portfolioLink.startsWith('http') ? portfolioLink : "https://" + portfolioLink} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-900 border border-slate-200 px-4 py-2.5 sm:py-3 rounded-xl font-bold transition shadow-sm text-xs sm:text-sm">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
+                      Professional Portfolio
+                    </a>
+                  ) : (
+                    <div className="w-full text-center text-slate-400 font-medium text-xs sm:text-sm italic bg-slate-50 py-2.5 sm:py-3 rounded-xl border border-slate-100">
+                      No professional link provided
+                    </div>
+                  )}
+                </div>
+                
+                <div className="pt-1">
+                  {cInfo.resumeUrl ? (
                     <a 
                       href={getResumeUrl(cInfo.resumeUrl)} 
                       target="_blank" 
                       rel="noopener noreferrer"
-                      className="w-full flex items-center justify-center gap-2 bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 px-4 py-3 rounded-xl font-bold transition shadow-sm text-sm">
-                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                      className="w-full flex items-center justify-center gap-2 bg-blue-50 hover:bg-blue-100 text-blue-700 border border-blue-200 px-4 py-2.5 sm:py-3 rounded-xl font-bold transition shadow-sm text-xs sm:text-sm">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                       View Full Resume
                     </a>
-                  </div>
-                )}
+                  ) : (
+                    <div className="w-full text-center text-slate-400 font-medium text-xs sm:text-sm italic bg-slate-50 py-2.5 sm:py-3 rounded-xl border border-slate-100">
+                      No resume uploaded
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
 

@@ -488,17 +488,23 @@ function Message() {
       else if (selectedContact.employerInfo && selectedContact.employerInfo.location) { contactLocation = selectedContact.employerInfo.location; }
   }
 
-  // 🚨 TEMPORARY FALLBACK ROUTING TO AVOID WHITE SCREEN
+  // 🚨 FIXED: STRICTER DYNAMIC ROUTING
   let profileRoute = "#";
   if (selectedContact) {
       if (selectedContact.role === 'employer') { 
-          // We are pointing this BACK to the Company Profile temporarily so it works!
           profileRoute = "/user-profile/" + selectedContact._id; 
       }
-      else { profileRoute = "/candidate/" + selectedContact._id; }
+      else if (selectedContact.role === 'jobSeeker') { 
+          profileRoute = "/candidate/" + selectedContact._id; 
+      }
+      else if (selectedContact.employerInfo && Object.keys(selectedContact.employerInfo).length > 0) {
+          profileRoute = "/user-profile/" + selectedContact._id;
+      } else {
+          profileRoute = "/candidate/" + selectedContact._id;
+      }
   }
 
-  // 🚨 UI LOGIC FOR NEW HEADER
+  // UI LOGIC FOR NEW HEADER
   let headerDisplayStatus = formatLastSeen(selectedContact ? selectedContact.lastSeen : null);
   if (selectedContact && selectedContact.isOnline) { headerDisplayStatus = "Active now"; }
 
@@ -543,7 +549,10 @@ function Message() {
                       <div className="flex justify-between items-baseline mb-0.5">
                          <p className="font-bold text-slate-900 truncate text-[15px]">{getDisplayName(contact)}</p>
                       </div>
-                      <p className="text-[12px] text-slate-500 truncate">{contact.role === 'employer' ? 'Employer' : 'Candidate'}</p>
+                      {/* 🚨 SAFELY SHOW ROLE IN SIDEBAR */}
+                      <p className="text-[12px] text-slate-500 truncate">
+                        {contact.role === 'employer' ? 'Employer' : 'Candidate'}
+                      </p>
                     </div>
                     
                       {contact.unreadCount > 0 ? (
@@ -571,7 +580,7 @@ function Message() {
               </div>
             ) : (
               <>
-                {/* 🚨 MINIMAL STICKY HEADER WITH RESTORED ACTIVE STATUS */}
+              {/* MINIMAL STICKY HEADER WITH RESTORED ACTIVE STATUS */}
                 <div className="px-2 sm:px-4 py-2 sm:py-3 bg-white border-b border-slate-200 flex items-center justify-between relative z-30 w-full shadow-sm">
                   <div className="flex items-center gap-2 sm:gap-3 overflow-hidden min-w-0">
                     <button onClick={() => setSelectedContact(null)} className="md:hidden p-1.5 text-blue-600 hover:bg-slate-100 rounded-full transition flex-shrink-0">
@@ -644,6 +653,8 @@ function Message() {
                     <Link to={profileRoute} className="text-xl sm:text-2xl font-extrabold text-slate-900 mb-1 hover:underline">
                       {getDisplayName(selectedContact)}
                     </Link>
+                    
+                    {/* 🚨 SAFELY SHOW ROLE IN CHAT HEADER */}
                     <p className="text-slate-500 text-[13px] sm:text-sm font-medium mb-4">
                        {selectedContact.role === 'employer' ? "Employer on TalexaJobs" : "Candidate on TalexaJobs"}
                        {contactLocation !== "" ? " - Lives in " + contactLocation : ""}
@@ -682,7 +693,6 @@ function Message() {
                       } else {
                          bubbleClass += "bg-slate-100 text-slate-800 rounded-xl rounded-tl-sm mr-auto ";
                       }
-
                       return (
                         <div key={msg._id} className="flex w-full mb-1 relative">
                           <div className={bubbleClass}>

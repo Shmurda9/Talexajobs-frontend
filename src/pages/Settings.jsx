@@ -11,18 +11,38 @@ function Settings() {
   const [isEditing, setIsEditing] = useState(false); 
   
   const [initialEmail, setInitialEmail] = useState('');
+  const [userRole, setUserRole] = useState(''); 
   
   const [showOtpModal, setShowOtpModal] = useState(false);
   const [otpCode, setOtpCode] = useState('');
   const [verifyingOtp, setVerifyingOtp] = useState(false);
 
+  // Added Candidate specific fields to the main flat state
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
     location: '',
     bio: '',
-    portfolioUrl: ''
+    portfolioUrl: '',
+    // Employer fields
+    jobTitle: '',
+    businessEmail: '',
+    companyName: '',
+    companyWebsite: '',
+    industry: '',
+    companySize: '',
+    companyDescription: '',
+    companyMission: '',
+    companyCulture: '',
+    // Candidate fields
+    contactEmail: '',
+    salaryExpectation: '',
+    skills: '' 
   });
+  
+  // Dynamic arrays for Candidate history
+  const [workExperience, setWorkExperience] = useState([]);
+  const [education, setEducation] = useState([]);
   
   const [selectedFile, setSelectedFile] = useState(null);
   const [previewPic, setPreviewPic] = useState(null);
@@ -30,15 +50,12 @@ function Settings() {
   const token = localStorage.getItem('token');
   
   let userId = null;
-  let userRole = '';
-  
   if (token) {
     try {
       const decoded = JSON.parse(atob(token.split('.')[1]));
       if (decoded.id) { userId = decoded.id; }
       else if (decoded._id) { userId = decoded._id; }
       else if (decoded.userId) { userId = decoded.userId; }
-      if (decoded.role) { userRole = decoded.role; }
     } catch (e) {
       console.error("Token error", e);
     }
@@ -56,43 +73,62 @@ function Settings() {
         });
         if (res.data.success) {
           const u = res.data.user;
+          const fetchedRole = u.role || 'employer';
+          setUserRole(fetchedRole);
           
-          let userLocation = '';
-          let userBio = '';
-          let userPortfolio = '';
-          let userFullName = '';
-          let userEmail = '';
+          let flatData = {
+            fullName: u.fullName || '',
+            email: u.email || '',
+            location: '',
+            bio: '',
+            portfolioUrl: '',
+            jobTitle: '',
+            businessEmail: '',
+            companyName: '',
+            companyWebsite: '',
+            industry: '',
+            companySize: '',
+            companyDescription: '',
+            companyMission: '',
+            companyCulture: '',
+            contactEmail: '',
+            salaryExpectation: '',
+            skills: ''
+          };
 
-          if (u.fullName) { userFullName = u.fullName; }
-          if (u.email) { userEmail = u.email; }
-
-          // 🚨 FIXED: Bulletproof if/else statements instead of || operators!
-          if (userRole === 'jobSeeker' && u.candidateInfo) {
-             if (u.candidateInfo.location) { userLocation = u.candidateInfo.location; }
-             if (u.candidateInfo.bio) { userBio = u.candidateInfo.bio; }
-             if (u.candidateInfo.portfolioUrl) { userPortfolio = u.candidateInfo.portfolioUrl; }
+          if (fetchedRole === 'jobSeeker' && u.candidateInfo) {
+             const c = u.candidateInfo;
+             if (c.location) flatData.location = c.location;
+             if (c.bio) flatData.bio = c.bio;
+             if (c.portfolioUrl || c.portfolioLink) flatData.portfolioUrl = c.portfolioUrl || c.portfolioLink;
+             if (c.contactEmail) flatData.contactEmail = c.contactEmail;
+             if (c.salaryExpectation) flatData.salaryExpectation = c.salaryExpectation;
              
-          } else if (userRole === 'employer' && u.employerInfo) {
-             if (u.employerInfo.companyLocation) { userLocation = u.employerInfo.companyLocation; }
-             else if (u.employerInfo.location) { userLocation = u.employerInfo.location; }
+             // Convert skills array to comma separated string for easy editing
+             if (c.skills && Array.isArray(c.skills)) {
+                flatData.skills = c.skills.map(s => typeof s === 'object' ? s.name : s).join(', ');
+             }
+             if (c.workExperience) setWorkExperience(c.workExperience);
+             if (c.education) setEducation(c.education);
              
-             if (u.employerInfo.bio) { userBio = u.employerInfo.bio; }
-             else if (u.bio) { userBio = u.bio; }
-             
-             if (u.employerInfo.personalWebsite) { userPortfolio = u.employerInfo.personalWebsite; }
-             else if (u.employerInfo.website) { userPortfolio = u.employerInfo.website; }
-             else if (u.portfolioUrl) { userPortfolio = u.portfolioUrl; }
+          } else if (fetchedRole === 'employer' && u.employerInfo) {
+             const e = u.employerInfo;
+             flatData.location = e.companyLocation || e.location || '';
+             flatData.bio = e.bio || u.bio || '';
+             flatData.portfolioUrl = e.personalWebsite || e.website || u.portfolioUrl || '';
+             flatData.jobTitle = e.posterJobTitle || '';
+             flatData.businessEmail = e.businessEmail || '';
+             flatData.companyName = e.companyName || '';
+             flatData.companyWebsite = e.website || '';
+             flatData.industry = e.industry || '';
+             flatData.companySize = e.companySize || '';
+             flatData.companyDescription = e.companyDescription || '';
+             flatData.companyMission = e.companyMission || '';
+             flatData.companyCulture = e.companyCulture || '';
           }
 
-          setFormData({
-            fullName: userFullName,
-            email: userEmail,
-            location: userLocation,
-            bio: userBio,
-            portfolioUrl: userPortfolio
-          });
-          
-          setInitialEmail(userEmail); 
+          setFormData(flatData);
+          setInitialEmail(u.email || ''); 
 
           if (u.profilePictureUrl) {
             let pUrl = u.profilePictureUrl;
@@ -108,11 +144,11 @@ function Settings() {
       }
     };
     if (userId) { fetchMyData(); }
-  }, [token, userId, navigate, userRole]);
+  }, [token, userId, navigate]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(function(prev) { return { ...prev, [name]: value }; });
+    setFormData(prev => ({ ...prev, [name]: value }));
   };
 
   const handleFileChange = (e) => {
@@ -124,6 +160,23 @@ function Settings() {
     }
   };
 
+  // Handlers for dynamic array inputs
+  const handleArrayChange = (setter, index, field, value) => {
+    setter(prev => {
+      const newArray = [...prev];
+      newArray[index] = { ...newArray[index], [field]: value };
+      return newArray;
+    });
+  };
+
+  const addArrayItem = (setter, emptyItem) => {
+    setter(prev => [...prev, emptyItem]);
+  };
+
+  const removeArrayItem = (setter, index) => {
+    setter(prev => prev.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -131,19 +184,40 @@ function Settings() {
     try {
       const updateData = new FormData();
       updateData.append('fullName', formData.fullName);
+      updateData.append('location', formData.location);
+      updateData.append('bio', formData.bio);
+      updateData.append('portfolioUrl', formData.portfolioUrl);
+
       if (selectedFile) updateData.append('profilePicture', selectedFile);
       
       if (userRole === 'jobSeeker') {
+         // Parse skills string back into an array
+         const skillsArray = formData.skills.split(',').map(s => s.trim()).filter(s => s !== '');
+         
          updateData.append('candidateInfo', JSON.stringify({ 
              location: formData.location,
              bio: formData.bio,
-             portfolioUrl: formData.portfolioUrl
+             portfolioLink: formData.portfolioUrl,
+             contactEmail: formData.contactEmail,
+             salaryExpectation: formData.salaryExpectation ? Number(formData.salaryExpectation) : null,
+             skills: skillsArray,
+             workExperience: workExperience,
+             education: education
          }));
       } else if (userRole === 'employer') {
          updateData.append('employerInfo', JSON.stringify({ 
-             companyLocation: formData.location,
+             location: formData.location,
              bio: formData.bio,
-             personalWebsite: formData.portfolioUrl
+             personalWebsite: formData.portfolioUrl,
+             posterJobTitle: formData.jobTitle,
+             businessEmail: formData.businessEmail,
+             companyName: formData.companyName,
+             website: formData.companyWebsite,
+             industry: formData.industry,
+             companySize: formData.companySize,
+             companyDescription: formData.companyDescription,
+             companyMission: formData.companyMission,
+             companyCulture: formData.companyCulture
          }));
       }
 
@@ -165,17 +239,16 @@ function Settings() {
             setLoading(false);
             return; 
         }
-
         toast.success("Account settings updated successfully!");
         setIsEditing(false);
         setTimeout(function() {
-          if (userRole === 'employer') { navigate('/manage-applicants'); }
+          if (userRole === 'employer') { navigate('/employer-dashboard'); }
           else { navigate('/dashboard'); }
         }, 1500);
       }
     } catch (error) {
       let msg = "Failed to update settings.";
-      if (error.response && error.response.data && error.response.data.message) { msg = error.response.data.message; }
+      if (error.response?.data?.message) { msg = error.response.data.message; }
       toast.error(msg);
       setLoading(false);
     }
@@ -201,13 +274,13 @@ function Settings() {
         setIsEditing(false);
         
         setTimeout(function() {
-          if (userRole === 'employer') { navigate('/manage-applicants'); }
+          if (userRole === 'employer') { navigate('/employer-dashboard'); }
           else { navigate('/dashboard'); }
         }, 1500);
       }
     } catch (error) {
       let msg = "Invalid or expired code.";
-      if (error.response && error.response.data && error.response.data.message) { msg = error.response.data.message; }
+      if (error.response?.data?.message) { msg = error.response.data.message; }
       toast.error(msg);
     } finally {
       setVerifyingOtp(false);
@@ -220,7 +293,7 @@ function Settings() {
 
   return (
     <div className="min-h-screen bg-slate-50 py-8 sm:py-12 px-4 sm:px-6 lg:px-8 font-sans">
-      <div className="max-w-2xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
+      <div className="max-w-3xl mx-auto bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-slate-200">
         
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8 border-b border-slate-100 pb-6">
           <div>
@@ -253,7 +326,6 @@ function Settings() {
                   {formData.fullName ? formData.fullName.charAt(0).toUpperCase() : "U"}
                 </span>
               )}
-              
               {isEditing && (
                 <div className="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                   <svg className="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /></svg>
@@ -264,32 +336,225 @@ function Settings() {
             <input type="file" accept="image/*" onChange={handleFileChange} ref={fileInputRef} className="hidden" />
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
-            <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} disabled={!isEditing} required className={inputClass} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Full Name</label>
+              <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} disabled={!isEditing} required className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Registration Email (Private)</label>
+              <input type="email" name="email" value={formData.email} onChange={handleChange} disabled={!isEditing} required className={inputClass} />
+              {isEditing && <p className="text-xs text-blue-600 mt-2 font-bold flex items-center gap-1"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Changing email requires verification</p>}
+            </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Email Address</label>
-            <input type="email" name="email" value={formData.email} onChange={handleChange} disabled={!isEditing} required className={inputClass} />
-            {isEditing && <p className="text-xs text-blue-600 mt-2 font-bold flex items-center gap-1"><svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg> Changing email requires verification</p>}
-          </div>
+          {/* ---------------- EMPLOYER SPECIFIC FIELDS ---------------- */}
+          {userRole === 'employer' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Job Title</label>
+                <input type="text" name="jobTitle" value={formData.jobTitle} onChange={handleChange} disabled={!isEditing} className={inputClass} placeholder="e.g. Hiring Manager" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Business Email (Public)</label>
+                <input type="email" name="businessEmail" value={formData.businessEmail} onChange={handleChange} disabled={!isEditing} className={inputClass} placeholder="e.g. hiring@company.com" />
+              </div>
+            </div>
+          )}
 
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Location</label>
-            <input type="text" name="location" value={formData.location} onChange={handleChange} disabled={!isEditing} placeholder="e.g. Austin, TX" className={inputClass} />
+          {/* ---------------- CANDIDATE SPECIFIC FIELDS ---------------- */}
+          {userRole === 'jobSeeker' && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Public Contact Email</label>
+                <input type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} disabled={!isEditing} className={inputClass} placeholder="For employers to reach you" />
+              </div>
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Expected Salary ($)</label>
+                <input type="number" name="salaryExpectation" value={formData.salaryExpectation} onChange={handleChange} disabled={!isEditing} className={inputClass} placeholder="e.g. 85000" />
+              </div>
+            </div>
+          )}
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Location</label>
+              <input type="text" name="location" value={formData.location} onChange={handleChange} disabled={!isEditing} placeholder="e.g. Austin, TX" className={inputClass} />
+            </div>
+            <div>
+              <label className="block text-sm font-semibold text-slate-700 mb-2">Portfolio / Website Link</label>
+              <input type="url" name="portfolioUrl" value={formData.portfolioUrl} onChange={handleChange} disabled={!isEditing} placeholder="https://" className={inputClass} />
+            </div>
           </div>
 
           <div>
             <label className="block text-sm font-semibold text-slate-700 mb-2">Professional Bio</label>
             <textarea name="bio" rows="3" value={formData.bio} onChange={handleChange} disabled={!isEditing} placeholder="A brief introduction about yourself..." className={inputClass + " resize-none"} />
           </div>
-          <div>
-            <label className="block text-sm font-semibold text-slate-700 mb-2">Portfolio / Website Link</label>
-            <input type="url" name="portfolioUrl" value={formData.portfolioUrl} onChange={handleChange} disabled={!isEditing} placeholder="https://linkedin.com/in/yourname" className={inputClass} />
-          </div>
 
-          <div className="pt-4 pb-2">
+          {/* ---------------- CANDIDATE ADVANCED FIELDS (SKILLS, EXPERIENCE, EDUCATION) ---------------- */}
+          {userRole === 'jobSeeker' && (
+            <div className="pt-6 mt-6 border-t border-slate-100 space-y-8">
+              
+              {/* SKILLS */}
+              <div>
+                <h2 className="text-xl font-black text-slate-900 mb-4">Professional Skills</h2>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Enter skills separated by commas</label>
+                <textarea 
+                  name="skills" 
+                  rows="2" 
+                  value={formData.skills} 
+                  onChange={handleChange} 
+                  disabled={!isEditing} 
+                  placeholder="e.g. React, Node.js, Project Management, Graphic Design" 
+                  className={inputClass + " resize-none"} 
+                />
+              </div>
+
+              {/* WORK EXPERIENCE */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-black text-slate-900">Work Experience</h2>
+                  {isEditing && (
+                    <button type="button" onClick={() => addArrayItem(setWorkExperience, { jobTitle: '', companyName: '', startDate: '', endDate: '', description: '' })} className="text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition">
+                      + Add Role
+                    </button>
+                  )}
+                </div>
+                
+                {workExperience.length === 0 && !isEditing ? (
+                  <p className="text-slate-400 italic text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">No experience added yet.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {workExperience.map((exp, index) => (
+                      <div key={index} className="p-5 border border-slate-200 rounded-xl bg-slate-50/50 relative">
+                        {isEditing && (
+                          <button type="button" onClick={() => removeArrayItem(setWorkExperience, index)} className="absolute top-4 right-4 text-rose-500 hover:text-rose-700">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 pr-8">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Job Title</label>
+                            <input type="text" value={exp.jobTitle || ''} onChange={(e) => handleArrayChange(setWorkExperience, index, 'jobTitle', e.target.value)} disabled={!isEditing} className={inputClass + " py-2 text-sm"} placeholder="Software Engineer" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Company</label>
+                            <input type="text" value={exp.companyName || ''} onChange={(e) => handleArrayChange(setWorkExperience, index, 'companyName', e.target.value)} disabled={!isEditing} className={inputClass + " py-2 text-sm"} placeholder="Google" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Start Date</label>
+                            <input type="text" value={exp.startDate || ''} onChange={(e) => handleArrayChange(setWorkExperience, index, 'startDate', e.target.value)} disabled={!isEditing} className={inputClass + " py-2 text-sm"} placeholder="Jan 2020" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">End Date</label>
+                            <input type="text" value={exp.endDate || ''} onChange={(e) => handleArrayChange(setWorkExperience, index, 'endDate', e.target.value)} disabled={!isEditing} className={inputClass + " py-2 text-sm"} placeholder="Present" />
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-slate-500 mb-1">Description</label>
+                          <textarea rows="2" value={exp.description || ''} onChange={(e) => handleArrayChange(setWorkExperience, index, 'description', e.target.value)} disabled={!isEditing} className={inputClass + " py-2 text-sm resize-none"} placeholder="What did you do?" />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* EDUCATION */}
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-xl font-black text-slate-900">Education & Training</h2>
+                  {isEditing && (
+                    <button type="button" onClick={() => addArrayItem(setEducation, { degree: '', schoolName: '' })} className="text-sm font-bold text-blue-600 hover:text-blue-700 bg-blue-50 px-3 py-1.5 rounded-lg transition">
+                      + Add Education
+                    </button>
+                  )}
+                </div>
+                
+                {education.length === 0 && !isEditing ? (
+                  <p className="text-slate-400 italic text-sm bg-slate-50 p-4 rounded-xl border border-slate-100">No education added yet.</p>
+                ) : (
+                  <div className="space-y-4">
+                    {education.map((edu, index) => (
+                      <div key={index} className="p-5 border border-slate-200 rounded-xl bg-slate-50/50 relative">
+                        {isEditing && (
+                          <button type="button" onClick={() => removeArrayItem(setEducation, index)} className="absolute top-4 right-4 text-rose-500 hover:text-rose-700">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                          </button>
+                        )}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pr-8">
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Degree / Certificate</label>
+                            <input type="text" value={edu.degree || ''} onChange={(e) => handleArrayChange(setEducation, index, 'degree', e.target.value)} disabled={!isEditing} className={inputClass + " py-2 text-sm"} placeholder="BSc Computer Science" />
+                          </div>
+                          <div>
+                            <label className="block text-xs font-bold text-slate-500 mb-1">Institution Name</label>
+                            <input type="text" value={edu.schoolName || ''} onChange={(e) => handleArrayChange(setEducation, index, 'schoolName', e.target.value)} disabled={!isEditing} className={inputClass + " py-2 text-sm"} placeholder="University of Texas" />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+            </div>
+          )}
+
+          {/* ---------------- EMPLOYER ADVANCED FIELDS ---------------- */}
+          {userRole === 'employer' && (
+            <div className="pt-6 mt-6 border-t border-slate-100">
+              <h2 className="text-xl font-black text-slate-900 mb-6">Company Details</h2>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Company Name</label>
+                  <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} disabled={!isEditing} className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Company Website</label>
+                  <input type="url" name="companyWebsite" value={formData.companyWebsite} onChange={handleChange} disabled={!isEditing} className={inputClass} placeholder="https://" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Industry</label>
+                  <input type="text" name="industry" value={formData.industry} onChange={handleChange} disabled={!isEditing} className={inputClass} placeholder="e.g. Technology" />
+                </div>
+                <div>
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Team Size</label>
+                  <select name="companySize" value={formData.companySize} onChange={handleChange} disabled={!isEditing} className={inputClass}>
+                    <option value="">Select size...</option>
+                    <option value="1-10">1-10 Employees</option>
+                    <option value="11-50">11-50 Employees</option>
+                    <option value="51-200">51-200 Employees</option>
+                    <option value="201-500">201-500 Employees</option>
+                    <option value="501-1000">501-1000 Employees</option>
+                    <option value="1000+">1000+ Employees</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Company Overview</label>
+                <textarea name="companyDescription" rows="3" value={formData.companyDescription} onChange={handleChange} disabled={!isEditing} className={inputClass + " resize-none"} />
+              </div>
+
+              <div className="mb-6">
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Company Mission</label>
+                <textarea name="companyMission" rows="2" value={formData.companyMission} onChange={handleChange} disabled={!isEditing} className={inputClass + " resize-none"} />
+              </div>
+
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Culture & Values</label>
+                <textarea name="companyCulture" rows="2" value={formData.companyCulture} onChange={handleChange} disabled={!isEditing} className={inputClass + " resize-none"} />
+              </div>
+            </div>
+          )}
+
+          <div className="pt-6 pb-2">
             <button 
               type="button" 
               onClick={() => navigate('/change-password')} 
@@ -304,7 +569,7 @@ function Settings() {
             <div className="pt-6 mt-4 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-3">
               <button type="button" onClick={() => { setIsEditing(false); setFormData({...formData, email: initialEmail}); }} className="w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition order-2 sm:order-1">
                 Cancel
-              </button>
+                </button>
               <button type="submit" disabled={loading} className={"w-full sm:w-auto px-6 py-3 rounded-xl font-bold text-white transition shadow-sm order-1 sm:order-2 " + (loading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700")}>
                 {loading ? "Saving..." : "Save Profile"}
               </button>

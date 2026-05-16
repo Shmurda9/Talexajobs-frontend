@@ -35,7 +35,6 @@ function Login() {
 
         toast.success("Welcome back, " + user.fullName.split(" ")[0] + "!");
 
-        // 🚨 FIX: Instant teleportation instead of slow window reloads
         if (user.role === "admin") {
           navigate("/admin");
           return;
@@ -56,7 +55,12 @@ function Login() {
             navigate("/dashboard");
           }
         } else {
-          navigate("/profile-setup");
+          // If setup is missing, route them to their specific setup flows
+          if (user.role === "employer") {
+             navigate("/employer-setup");
+          } else {
+             navigate("/profile-setup");
+          }
         }
       }
     } catch (error) {
@@ -80,9 +84,26 @@ function Login() {
   return (
     <div className="min-h-screen relative flex flex-col justify-center py-12 sm:px-6 lg:px-8 font-sans bg-slate-50 overflow-hidden">
       
-      {/* Premium Background Blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400/20 blur-[100px] rounded-full pointer-events-none"></div>
-      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-400/20 blur-[100px] rounded-full pointer-events-none"></div>
+      {/* 🚨 PREMIUM BACKGROUND VIDEO START */}
+      <video
+        autoPlay
+        loop
+        muted
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0 opacity-60"
+      >
+        {/* Replace "bg-video.mp4" with the exact name of your video file in the public folder */}
+        <source src="/bg-video.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+      
+      {/* Light Frosted Overlay to ensure text remains readable over the video */}
+      <div className="absolute inset-0 bg-slate-50/70 backdrop-blur-[2px] z-0"></div>
+      {/* 🚨 PREMIUM BACKGROUND VIDEO END */}
+
+      {/* Premium Background Blobs (Kept for extra color depth) */}
+      <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400/30 blur-[100px] rounded-full pointer-events-none z-0"></div>
+      <div className="absolute bottom-[-10%] right-[-10%] w-96 h-96 bg-indigo-400/30 blur-[100px] rounded-full pointer-events-none z-0"></div>
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md flex flex-col items-center relative z-10">
         <Link to="/" className="h-16 w-16 bg-gradient-to-tr from-blue-600 to-indigo-600 rounded-2xl shadow-lg shadow-blue-500/30 flex items-center justify-center mb-8 transform hover:scale-105 transition-transform duration-300">
@@ -92,7 +113,7 @@ function Login() {
         <h2 className="text-center text-3xl font-black text-slate-900 tracking-tight">
           Welcome Back
         </h2>
-        <p className="mt-2 text-center text-sm font-medium text-slate-500 max-w-xs">
+        <p className="mt-2 text-center text-sm font-medium text-slate-600 max-w-xs">
           Enter your credentials to access your professional workspace.
         </p>
       </div>
@@ -114,7 +135,7 @@ function Login() {
                   required 
                   value={formData.email} 
                   onChange={handleChange} 
-                  className="appearance-none block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" 
+                  className="appearance-none block w-full pl-11 pr-4 py-3.5 bg-white/90 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-sm" 
                 />
               </div>
             </div>
@@ -131,7 +152,7 @@ function Login() {
                   required 
                   value={formData.password} 
                   onChange={handleChange} 
-                  className="appearance-none block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm" 
+                  className="appearance-none block w-full pl-11 pr-4 py-3.5 bg-white/90 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 transition-all shadow-sm" 
                 />
               </div>
             </div>
@@ -143,7 +164,7 @@ function Login() {
                   name="remember-me" 
                   type="checkbox" 
                   checked={rememberMe} 
-                  onChange={(e) => setRememberMe(e.target.checked)} 
+                  onChange={(e) => setRememberMe(e.target.checked)}
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-slate-300 rounded cursor-pointer transition" 
                 />
                 <label htmlFor="remember-me" className="ml-2 block text-sm font-bold text-slate-600 cursor-pointer">
@@ -165,7 +186,7 @@ function Login() {
               >
                 Sign In 
               </button>
-              </div>
+            </div>
             
           </form>
 

@@ -52,15 +52,18 @@ function CompanyProfile() {
     );
   }
 
+  // DATA MAPPING
   const info = employer.employerInfo || {};
   const companyName = info.companyName || "Confidential Employer";
   const industry = info.industry || "Professional Services";
-  const location = info.companyLocation || "Global";
+  
+  // Checking both old and new backend fields so it never breaks
+  const location = info.location || info.companyLocation || "Global";
   const size = info.companySize || "Not Disclosed";
-  const description = info.companyDescription || "";
-  const mission = info.mission || "";
-  const culture = info.culture || "";
-  const website = info.website || "";
+  const description = info.companyDescription || info.bio || "";
+  const mission = info.companyMission || info.mission || "";
+  const culture = info.companyCulture || info.culture || "";
+  const website = info.personalWebsite || info.website || "";
   
   let logoUrl = null;
   if (info.logoUrl) {
@@ -105,7 +108,7 @@ function CompanyProfile() {
                 )}
               </div>
               
-              {/* COMPANY INFO (with min-w-0 to stop long text stretching) */}
+              {/* COMPANY INFO */}
               <div className="flex-1 min-w-0 max-w-full">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl font-black text-slate-900 tracking-tight leading-tight break-words">{companyName}</h1>
                 <div className="flex flex-col sm:flex-row items-center sm:items-start md:items-center gap-2 sm:gap-3 mt-2 sm:mt-3 max-w-full">
@@ -113,7 +116,7 @@ function CompanyProfile() {
                     {industry}
                   </span>
                   {website && (
-                    <a href={website} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-blue-600 font-bold text-xs sm:text-sm flex items-center justify-center sm:justify-start gap-1.5 transition bg-slate-50 hover:bg-blue-50 px-3 py-1.5 rounded-md border border-slate-200 hover:border-blue-200 truncate max-w-full">
+                    <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noreferrer" className="text-slate-500 hover:text-blue-600 font-bold text-xs sm:text-sm flex items-center justify-center sm:justify-start gap-1.5 transition bg-slate-50 hover:bg-blue-50 px-3 py-1.5 rounded-md border border-slate-200 hover:border-blue-200 truncate max-w-full">
                       <svg className="w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                       <span className="truncate">Website</span>
                     </a>
@@ -149,7 +152,6 @@ function CompanyProfile() {
             </div>
             <div className="bg-slate-50 p-3 sm:p-4 rounded-xl border border-slate-100 flex flex-col justify-center min-w-0">
               <p className="text-[9px] sm:text-[10px] md:text-xs font-bold text-slate-400 uppercase tracking-widest mb-1.5 truncate">Company Status</p>
-              {/* 🚨 PREMIUM VERIFIED BADGE */}
               <div className="flex items-center justify-center gap-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-2 py-1 sm:px-3 sm:py-1.5 rounded-lg shadow-sm w-fit mx-auto md:mx-0">
                 <svg className="w-3 h-3 sm:w-4 sm:h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 <span className="text-[9px] sm:text-[10px] md:text-xs font-bold uppercase tracking-wider">Verified</span>
@@ -221,7 +223,6 @@ function CompanyProfile() {
                     <div key={job._id} className="bg-white border border-slate-200 p-4 sm:p-5 md:p-6 rounded-2xl shadow-sm hover:shadow-md transition overflow-hidden">
                       <div className="flex flex-col sm:flex-row justify-between items-start gap-3 sm:gap-4">
                         
-                        {/* 🚨 THE FIX: Let the title breathe and wrap! */}
                         <div className="flex-1 min-w-0 w-full">
                           <h4 className="text-base sm:text-lg md:text-xl font-extrabold text-slate-900 mb-2 sm:mb-2.5 leading-snug break-words">{job.title ? job.title : "Professional Role"}</h4>
                           
