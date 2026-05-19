@@ -40,20 +40,41 @@ function App() {
         <Navbar />
         
         <LiveChat />
-        
+        {/* 🚨 PREMIUM COLORED GLASSMORPHISM TOASTER */}
         <Toaster 
-          position="top-right" 
+          position="top-center"
           toastOptions={{
             duration: 4000,
+            // Base styles for the glass shape, blur, and shadow
+            style: {
+              backdropFilter: 'blur(12px)', 
+              WebkitBackdropFilter: 'blur(12px)', 
+              boxShadow: '0 8px 32px 0 rgba(15, 23, 42, 0.08)', 
+              padding: '16px 20px',
+              borderRadius: '1rem', 
+              fontFamily: "'Poppins', sans-serif",
+              fontWeight: '700',
+              fontSize: '14px',
+            },
+            // SUCCESS: Light Premium Emerald Glass
             success: {
-              style: { background: '#10B981', color: '#fff', fontWeight: 'bold' },
-              iconTheme: { primary: '#fff', secondary: '#10B981' },
+              style: {
+                background: 'rgba(236, 253, 245, 0.85)', // Light translucent green
+                border: '1px solid rgba(16, 185, 129, 0.3)', // Soft green outline
+                color: '#065f46', // Deep emerald text
+              },
+              iconTheme: { primary: '#10b981', secondary: '#ffffff' }, 
             },
+            // ERROR: Light Premium Rose Glass
             error: {
-              style: { background: '#EF4444', color: '#fff', fontWeight: 'bold' },
-              iconTheme: { primary: '#fff', secondary: '#EF4444' },
-            },
-          }} 
+              style: {
+                background: 'rgba(255, 241, 242, 0.85)', // Light translucent red
+                border: '1px solid rgba(225, 29, 72, 0.3)', // Soft red outline
+                color: '#9f1239', // Deep rose text
+              },
+              iconTheme: { primary: '#e11d48', secondary: '#ffffff' }, 
+            }
+          }}
         />
 
         <GlobalChatListener />

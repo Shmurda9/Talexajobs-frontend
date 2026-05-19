@@ -24,6 +24,9 @@ function JobBoard() {
   const [coverLetterText, setCoverLetterText] = useState("");
   const [applyingJobId, setApplyingJobId] = useState(null);
 
+  // 🚨 NEW STATE FOR THE SUGGESTED JOBS MODAL
+  const [showSuggestedModal, setShowSuggestedModal] = useState(false);
+
   const token = localStorage.getItem("token");
   const userStr = localStorage.getItem("user");
   
@@ -155,7 +158,7 @@ function JobBoard() {
       }
       
       if (isRestricted == true) {
-          toast.error("Your account has been restricted. Please check your email for details.", { duration: 5000, icon: "🚨" });
+          toast.error("Your account has been restricted. Please check your email for details.");
       } else {
           toast.error("Failed to apply. You may have already applied for this position.");
       }
@@ -180,7 +183,6 @@ function JobBoard() {
     navigate("/messages", { state: { prefilledContact: job.user } });
   };
 
-  // 🚨 THE FULLY FIXED FILTERING ENGINE
   const filteredJobs = jobs.filter((job) => {
     let isApproved = false;
     if (job.adminStatus == "approved") { isApproved = true; }
@@ -217,19 +219,15 @@ function JobBoard() {
         if (jobLoc.includes(locationFilter.toLowerCase()) == false) return false;
     }
     
-    // 🚨 STRICT REMOTE FILTER LOGIC
     if (remoteOnly == true) {
         const jobLoc = job.location ? job.location.toLowerCase() : "";
         let isTaggedRemote = false;
 
-        // Check if explicit remote boolean is true
         if (job.isRemote === true) { isTaggedRemote = true; }
-        // Check if "remote" is in the text
         if (jobLoc.includes("remote")) { isTaggedRemote = true; }
-        // Check if "work from home" is in the text
         if (jobLoc.includes("work from home")) { isTaggedRemote = true; }
 
-        if (isTaggedRemote == false) { return false; } // If none match, strictly hide the job!
+        if (isTaggedRemote == false) { return false; } 
     }
     
     if (minSalary && minSalary.length > 0) {
@@ -267,17 +265,17 @@ function JobBoard() {
   };
 
   const recommendedJobs = getRecommendedJobs();
-  
-  let showRecommendations = false;
-  if (recommendedJobs.length > 0) {
-      if (searchTerm.length < 1) {
-          if (categoryFilter.length < 1) {
-              if (currentPage == 1) {
-                  showRecommendations = true;
-              }
-          }
+
+  // 🚨 THE ONE-TIME SESSION POP-UP LOGIC
+  useEffect(() => {
+    if (recommendedJobs.length > 0) {
+      const hasSeenPopup = sessionStorage.getItem('hasSeenSuggestedJobs');
+      if (!hasSeenPopup) {
+        setShowSuggestedModal(true);
+        sessionStorage.setItem('hasSeenSuggestedJobs', 'true');
       }
-  }
+    }
+  }, [recommendedJobs.length]);
 
   const totalPages = Math.ceil(filteredJobs.length / JOBS_PER_PAGE);
   const indexOfLastJob = currentPage * JOBS_PER_PAGE;
@@ -441,23 +439,24 @@ function JobBoard() {
 
   if (loading == true) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center font-sans" style={{ fontFamily: "'Poppins', sans-serif" }}>
         <p className="text-slate-500 font-bold tracking-wide animate-pulse">Loading Opportunities...</p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 py-8 sm:py-10 font-sans relative">
+    <div className="min-h-screen bg-slate-50 py-8 sm:py-10 font-sans relative" style={{ fontFamily: "'Poppins', sans-serif" }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="mb-6 sm:mb-8 text-center sm:text-left">
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate-900 tracking-tight">Career Opportunities</h1>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">Career Opportunities</h1>
           <p className="mt-2 text-slate-500 font-medium text-sm sm:text-base">Discover your next role at top-tier companies.</p>
         </div>
 
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-8">
           
+          {/* Filters Sidebar */}
           <div className="w-full lg:w-1/4 flex-shrink-0">
             <div className="bg-white p-5 sm:p-6 rounded-2xl shadow-sm border border-slate-200 sticky top-6">
               <h2 className="text-base sm:text-lg font-bold text-slate-900 mb-4 sm:mb-5 border-b border-slate-100 pb-3 flex items-center gap-2">
@@ -535,23 +534,9 @@ function JobBoard() {
             </div>
           </div>
 
+          {/* Job Feed */}
           <div className="w-full lg:w-3/4">
             
-            {showRecommendations == true ? (
-              <div className="mb-8 bg-white border border-amber-200 rounded-2xl p-5 sm:p-6 shadow-md relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-1 h-full bg-amber-400"></div>
-                <div className="flex items-center gap-2 mb-4">
-                  <span className="text-xl">✨</span>
-                  <h2 className="text-lg font-extrabold text-slate-900 tracking-tight">Recommended for You</h2>
-                </div>
-                <p className="text-sm text-slate-500 mb-5 font-medium">Based on your profile headline.</p>
-                
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {recommendedJobs.map((job) => renderJobCard(job, true))}
-                </div>
-              </div>
-            ) : null}
-
             <div className="mb-4 flex justify-between items-center text-xs sm:text-sm text-slate-500 font-bold">
               <span>Showing {filteredJobs.length} {filteredJobs.length == 1 ? "Opportunity" : "Opportunities"}</span>
             </div>
@@ -602,12 +587,45 @@ function JobBoard() {
         </div>
       </div>
 
+      {/* 🚨 PREMIUM SUGGESTED JOBS MODAL */}
+      {showSuggestedModal ? (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-opacity">
+          <div className="bg-white rounded-[2rem] shadow-2xl w-full max-w-4xl border border-slate-200 flex flex-col overflow-hidden">
+            <div className="px-6 py-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
+              <div className="flex items-center gap-3">
+                <span className="text-2xl">✨</span>
+                <div>
+                  <h3 className="text-xl font-black text-slate-900">Recommended for You</h3>
+                  <p className="text-xs text-slate-500 font-medium mt-1">Based on your profile headline.</p>
+                </div>
+              </div>
+              <button onClick={() => setShowSuggestedModal(false)} className="text-slate-400 hover:text-rose-500 transition bg-white hover:bg-rose-50 rounded-full p-2 border border-slate-200 shadow-sm">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            
+            <div className="p-6 overflow-y-auto max-h-[60vh] bg-slate-50/50">
+              <div className="grid gap-4 sm:grid-cols-2">
+                {recommendedJobs.map((job) => renderJobCard(job, true))}
+              </div>
+            </div>
+            
+            <div className="px-6 py-4 bg-white border-t border-slate-100 flex justify-end">
+              <button onClick={() => setShowSuggestedModal(false)} className="px-6 py-3 rounded-xl font-bold text-white bg-blue-600 hover:bg-blue-700 transition shadow-md w-full sm:w-auto text-center">
+                View All Jobs
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {/* Detail View Modal */}
       {selectedJob ? (
         <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 bg-slate-900 bg-opacity-60 backdrop-blur-sm overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto border border-slate-200 flex flex-col relative">
             <div className="sticky top-0 bg-white px-5 sm:px-6 py-4 border-b border-slate-100 flex justify-between items-start sm:items-center z-10 gap-4">
               <div className="min-w-0 flex-1">
-                <h3 className="text-lg sm:text-2xl font-extrabold text-slate-900 truncate">{selectedJob.title}</h3>
+                <h3 className="text-lg sm:text-2xl font-black text-slate-900 truncate">{selectedJob.title}</h3>
                 <p className="text-xs sm:text-sm text-blue-600 font-bold truncate mt-0.5 sm:mt-1">{getDisplayName(selectedJob.user)}</p>
                 </div>
               <button onClick={() => setSelectedJob(null)} className="text-slate-400 hover:text-slate-700 transition bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-full p-2 flex-shrink-0">
@@ -692,13 +710,14 @@ function JobBoard() {
         </div>
       ) : null}
 
+      {/* Apply Form Modal */}
       {showApplyModal ? (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900 bg-opacity-70 backdrop-blur-sm transition-opacity">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col overflow-hidden">
             
             <div className="px-6 py-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
               <div>
-                 <h3 className="text-xl font-extrabold text-slate-900">Submit Application</h3>
+                 <h3 className="text-xl font-black text-slate-900">Submit Application</h3>
                  <p className="text-xs text-slate-500 font-medium mt-1">Include a brief message to stand out.</p>
               </div>
               <button onClick={() => setShowApplyModal(false)} className="text-slate-400 hover:text-rose-500 transition bg-white hover:bg-rose-50 rounded-full p-2 border border-slate-200 shadow-sm">

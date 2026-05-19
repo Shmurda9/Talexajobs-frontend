@@ -191,33 +191,34 @@ function Settings() {
       if (selectedFile) updateData.append('profilePicture', selectedFile);
       
       if (userRole === 'jobSeeker') {
-         // Parse skills string back into an array
-         const skillsArray = formData.skills.split(',').map(s => s.trim()).filter(s => s !== '');
+         // Safely parse skills even if it's somehow undefined or empty
+         const skillsArray = formData.skills ? formData.skills.split(',').map(s => s.trim()).filter(s => s !== '') : [];
          
          updateData.append('candidateInfo', JSON.stringify({ 
-             location: formData.location,
-             bio: formData.bio,
-             portfolioLink: formData.portfolioUrl,
-             contactEmail: formData.contactEmail,
-             salaryExpectation: formData.salaryExpectation ? Number(formData.salaryExpectation) : null,
+             location: formData.location || "",
+             bio: formData.bio || "",
+             portfolioLink: formData.portfolioUrl || "",
+             contactEmail: formData.contactEmail || "",
+             // Force salary to be a String to perfectly match your backend model
+             salaryExpectation: formData.salaryExpectation ? String(formData.salaryExpectation) : "",
              skills: skillsArray,
-             workExperience: workExperience,
-             education: education
+             workExperience: workExperience || [],
+             education: education || []
          }));
       } else if (userRole === 'employer') {
          updateData.append('employerInfo', JSON.stringify({ 
-             location: formData.location,
-             bio: formData.bio,
-             personalWebsite: formData.portfolioUrl,
-             posterJobTitle: formData.jobTitle,
-             businessEmail: formData.businessEmail,
-             companyName: formData.companyName,
-             website: formData.companyWebsite,
-             industry: formData.industry,
-             companySize: formData.companySize,
-             companyDescription: formData.companyDescription,
-             companyMission: formData.companyMission,
-             companyCulture: formData.companyCulture
+             location: formData.location || "",
+             bio: formData.bio || "",
+             personalWebsite: formData.portfolioUrl || "",
+             posterJobTitle: formData.jobTitle || "",
+             businessEmail: formData.businessEmail || "",
+             companyName: formData.companyName || "",
+             website: formData.companyWebsite || "",
+             industry: formData.industry || "",
+             companySize: formData.companySize || "",
+             companyDescription: formData.companyDescription || "",
+             companyMission: formData.companyMission || "",
+             companyCulture: formData.companyCulture || ""
          }));
       }
 

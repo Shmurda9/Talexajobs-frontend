@@ -231,6 +231,8 @@ function Navbar() {
   return (
     <>
       <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800;900&display=swap');
+        
         body { top: 0px !important; position: static !important; }
         .skiptranslate iframe, .goog-te-banner-frame { display: none !important; }
         #goog-gt-tt, .goog-te-balloon-frame { display: none !important; opacity: 0 !important; visibility: hidden !important; }
@@ -241,20 +243,21 @@ function Navbar() {
 
       <div id="google_translate_element" style={{ display: 'none' }}></div>
 
-      <nav className="bg-slate-900 text-white shadow-md sticky top-0 z-50 font-sans transition-all duration-300">
+      {/* Added inline style to enforce Poppins globally across the entire nav */}
+      <nav className="bg-slate-900 text-white shadow-md sticky top-0 z-50 transition-all duration-300" style={{ fontFamily: "'Poppins', sans-serif" }}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-[72px] items-center">
             
-            <Link to="/" className="flex items-center gap-2 flex-shrink-0 max-w-[50%] group">
+            <Link to="/" className="flex items-center gap-2 sm:gap-2.5 flex-shrink-0 max-w-[60%] group">
               <img 
                 src="/logo.png" 
                 alt="" 
-                className="h-8 sm:h-10 w-auto object-contain" 
-                style={{ minWidth: '32px' }}
+                className="h-6 sm:h-8 w-auto object-contain" 
+                style={{ minWidth: '28px' }}
                 onError={(e) => { e.target.style.display = 'none'; }}
               />
-              <span className="font-black text-lg sm:text-2xl tracking-wide text-white truncate">
-                TalexaJobs
+              <span className="font-bold text-lg sm:text-[22px] tracking-tight text-white truncate lowercase pt-0.5">
+                talexajobs
               </span>
             </Link>
             
@@ -453,7 +456,7 @@ function Navbar() {
 
       {showLangModal && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-sm transition-opacity">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col font-sans overflow-hidden border border-slate-200">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col font-sans overflow-hidden border border-slate-200" style={{ fontFamily: "'Poppins', sans-serif" }}>
             
             <div className="bg-white px-6 py-5 border-b border-slate-100 flex justify-between items-center z-20">
               <div>

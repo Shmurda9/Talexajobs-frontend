@@ -8,7 +8,9 @@ function Footer() {
         
         {/* Brand Section */}
         <div className="mb-6 md:mb-0">
-          <h2 className="text-2xl font-extrabold text-white tracking-wider">TalexaJobs</h2>
+          <h2 className="font-bold text-[22px] tracking-tight text-white lowercase" style={{ fontFamily: "'Poppins', sans-serif" }}>
+  talexajobs
+</h2>
           <p className="text-sm mt-2 text-slate-400 max-w-sm">
             Connecting top global talent with the best worldwide employers. Build your future today.
           </p>
