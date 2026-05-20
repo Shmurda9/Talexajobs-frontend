@@ -7,6 +7,8 @@ function PostJob() {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   
+  const [currency, setCurrency] = useState("$");
+  
   const [formData, setFormData] = useState({
     title: "",
     category: "", 
@@ -29,6 +31,18 @@ function PostJob() {
     setFormData(function(prev) {
       return { ...prev, [name]: type === "checkbox" ? checked : value };
     });
+  };
+
+  const handleSalaryChange = (e) => {
+    const rawValue = e.target.value.replace(/\D/g, "");
+    
+    if (rawValue === "") {
+      setFormData(prev => ({ ...prev, salary: "" }));
+      return;
+    }
+    
+    const formattedValue = Number(rawValue).toLocaleString("en-US");
+    setFormData(prev => ({ ...prev, salary: formattedValue }));
   };
 
   const toggleRemote = () => {
@@ -60,6 +74,8 @@ function PostJob() {
         }
       }
 
+      const numericSalary = Number(formData.salary.replace(/,/g, ""));
+
       const payload = {
         title: formData.title,
         category: formData.category ? formData.category : "Other",
@@ -68,7 +84,7 @@ function PostJob() {
         employmentType: formData.employmentType,
         experienceLevel: formData.experienceLevel,
         education: formData.education,
-        salary: Number(formData.salary),
+        salary: numericSalary, 
         deadline: formData.deadline ? formData.deadline : undefined,
         description: formData.description,
         responsibilities: formData.responsibilities.split('\n').map(function(item){ return item.trim(); }).filter(function(item){ return item !== ""; }),
@@ -101,11 +117,11 @@ function PostJob() {
     }
   };
 
-  const inputClass = "appearance-none block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm";
+  const inputClass = "appearance-none block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all shadow-sm";
   const labelClass = "block text-xs font-extrabold text-slate-700 mb-2 uppercase tracking-wider";
 
-return (
-    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans pb-24">
+  return (
+    <div className="min-h-screen bg-slate-50 py-12 px-4 sm:px-6 lg:px-8 font-sans pb-24" style={{ fontFamily: "'Poppins', sans-serif" }}>
       <div className="max-w-4xl mx-auto">
         <div className="bg-white shadow-xl rounded-2xl overflow-hidden border border-slate-200">
           
@@ -135,7 +151,7 @@ return (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div>
                     <label className={labelClass}>Job Title</label>
-                    <input type="text" name="title" value={formData.title} onChange={handleChange} required className={inputClass} placeholder="e.g. Senior Product Designer" />
+                    <input type="text" name="title" value={formData.title} onChange={handleChange} required className={inputClass} />
                   </div>
                   
                   <div>
@@ -148,9 +164,7 @@ return (
                       onChange={handleChange} 
                       required 
                       className={inputClass} 
-                      placeholder="Select or type a category..." 
                     />
-                    {/* 🚨 BULLETPROOF OPTIONS - NO SELF CLOSING TAGS */}
                     <datalist id="job-categories">
                       <option value="Customer Support"></option>
                       <option value="Virtual Assistant"></option>
@@ -200,7 +214,7 @@ return (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
                   <div>
                     <label className={labelClass}>Location</label>
-                    <input type="text" name="location" value={formData.location} onChange={handleChange} required className={inputClass} placeholder="e.g. New York, NY" />
+                    <input type="text" name="location" value={formData.location} onChange={handleChange} required className={inputClass} />
                   </div>
                   
                   <div 
@@ -264,15 +278,15 @@ return (
                 <div className="space-y-6">
                   <div>
                     <label className={labelClass}>Job Summary</label>
-                    <textarea name="description" value={formData.description} onChange={handleChange} required className={inputClass} rows="3" placeholder="Provide a brief overview of the role and your company..."></textarea>
+                    <textarea name="description" value={formData.description} onChange={handleChange} required className={inputClass} rows="3"></textarea>
                   </div>
                   <div>
-                    <label className={labelClass}>Key Responsibilities (One per line)</label>
-                    <textarea name="responsibilities" value={formData.responsibilities} onChange={handleChange} className={inputClass} rows="4" placeholder="Lead the design of...&#10;Collaborate with engineering teams...&#10;Present concepts to stakeholders..."></textarea>
+                    <label className={labelClass}>Key Responsibilities <span className="text-slate-400 font-normal normal-case tracking-normal">(One per line)</span></label>
+                    <textarea name="responsibilities" value={formData.responsibilities} onChange={handleChange} className={inputClass} rows="4"></textarea>
                   </div>
                   <div>
-                    <label className={labelClass}>Required Skills (Comma separated)</label>
-                    <input type="text" name="skills" value={formData.skills} onChange={handleChange} className={inputClass} placeholder="e.g. React, Node.js, UI/UX Design, Figma" />
+                    <label className={labelClass}>Required Skills <span className="text-slate-400 font-normal normal-case tracking-normal">(Comma separated)</span></label>
+                    <input type="text" name="skills" value={formData.skills} onChange={handleChange} className={inputClass} />
                   </div>
                 </div>
               </div>
@@ -283,29 +297,46 @@ return (
                   Compensation & Routing
                 </h3>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  
+                  {/* CLEAN CURRENCY & SALARY COMBO */}
                   <div>
-                    <label className={labelClass}>Yearly Salary (USD)</label>
-                    <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                        <span className="text-slate-400 font-bold">$</span>
-                      </div>
-                      <input type="number" name="salary" value={formData.salary} onChange={handleChange} required className={inputClass + " pl-8"} placeholder="e.g. 85000" />
+                    <label className={labelClass}>Yearly Salary</label>
+                    <div className="flex relative shadow-sm rounded-xl">
+                      <select 
+                        value={currency} 
+                        onChange={(e) => setCurrency(e.target.value)}
+                        className="appearance-none bg-slate-100 border border-slate-200 border-r-0 rounded-l-xl px-4 py-3.5 font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500/50 z-10 cursor-pointer"
+                      >
+                        <option value="$">$</option>
+                        <option value="€">€</option>
+                        <option value="£">£</option>
+                        <option value="¥">¥</option>
+                        <option value="₦">₦</option>
+                      </select>
+                      <input 
+                        type="text" 
+                        name="salary" 
+                        value={formData.salary} 
+                        onChange={handleSalaryChange} 
+                        required 
+                        className="appearance-none block w-full px-4 py-3.5 bg-slate-50 border border-slate-200 rounded-r-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 focus:bg-white transition-all" 
+                      />
                     </div>
                   </div>
+
                   <div>
                     <label className={labelClass}>Application Deadline</label>
                     <input type="date" name="deadline" value={formData.deadline} onChange={handleChange} className={inputClass + " cursor-pointer"} />
                   </div>
                 </div>
                 <div className="mt-6">
-                  <label className={labelClass}>Benefits & Perks (Comma separated)</label>
-                  <input type="text" name="perks" value={formData.perks} onChange={handleChange} className={inputClass} placeholder="e.g. Health Insurance, 401k, Remote Work, Gym Membership" />
+                  <label className={labelClass}>Benefits & Perks <span className="text-slate-400 font-normal normal-case tracking-normal">(Comma separated)</span></label>
+                  <input type="text" name="perks" value={formData.perks} onChange={handleChange} className={inputClass} />
                 </div>
                 
                 <div className="mt-6">
-                  <label className={labelClass}>External Application Link (Optional)</label>
-                  <p className="text-xs text-slate-500 mb-2 font-medium">If you want candidates to apply on your own website, paste the URL here.</p>
-                  <div className="relative">
+                  <label className={labelClass}>External Application Link <span className="text-slate-400 font-normal normal-case tracking-normal">(Optional)</span></label>
+                  <div className="relative mt-2">
                     <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                       <svg className="w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" /></svg>
                     </div>
