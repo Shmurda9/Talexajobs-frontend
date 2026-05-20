@@ -82,11 +82,13 @@ function CompanyProfile() {
       
       {/* HEADER HERO SECTION */}
       <div className="relative h-40 sm:h-64 bg-slate-900 overflow-hidden">
-        <img 
-          src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
-          alt="Company Cover" 
-          className="absolute inset-0 w-full h-full object-cover opacity-50"
-        />
+       // Find this in your CompanyProfile.jsx:
+<img 
+  src={logoUrl} 
+  alt={companyName} 
+  className="h-full w-full object-contain p-3" // Changed object-cover to object-contain and added p-3
+  onError={() => setImgError(true)} 
+/>
         <div className="absolute inset-0 bg-gradient-to-t from-slate-900 via-transparent to-transparent opacity-80"></div>
       </div>
 
