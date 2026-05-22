@@ -8,7 +8,6 @@ function ManageApplicants() {
   const [loading, setLoading] = useState(true);
   const [viewingCoverLetter, setViewingCoverLetter] = useState(null); 
   
-  // 🚨 NEW PREMIUM MODAL STATES
   const [deleteModalAppId, setDeleteModalAppId] = useState(null);
   const [messageModalData, setMessageModalData] = useState(null);
   const [messageText, setMessageText] = useState("");
@@ -64,12 +63,10 @@ function ManageApplicants() {
     }
   };
 
-  // 🚨 TRIGGER DELETE MODAL
   const triggerDelete = (appId) => {
     setDeleteModalAppId(appId);
   };
 
-  // 🚨 EXECUTE DELETE
   const confirmDeleteApplicant = async () => {
     if (!deleteModalAppId) return;
     const loadingToast = toast.loading("Removing candidate...");
@@ -90,7 +87,6 @@ function ManageApplicants() {
     }
   };
 
-  // 🚨 TRIGGER MESSAGE MODAL
   const triggerMessage = (candidate, jobTitle) => {
     let candId = null;
     if (candidate && candidate._id) candId = candidate._id;
@@ -107,7 +103,6 @@ function ManageApplicants() {
     setMessageModalData({ candId, candName, jobTitle });
   };
 
-  // 🚨 EXECUTE MESSAGE
   const confirmMessageCandidate = async () => {
     if (!messageModalData || messageText.trim() === '') {
       toast.error("Please enter a message.");
@@ -178,7 +173,7 @@ function ManageApplicants() {
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         
         <div className="mb-6 md:mb-8 bg-white border border-slate-200 rounded-2xl p-6 sm:p-8 shadow-sm">
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight flex items-center gap-3">
             <svg className="w-7 h-7 sm:w-8 sm:h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" /></svg>
             Candidate Pipeline
           </h1>
@@ -187,7 +182,7 @@ function ManageApplicants() {
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           <div className="px-5 sm:px-6 py-4 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
-            <h3 className="text-sm md:text-base font-extrabold text-slate-800 uppercase tracking-wider">Total Applications</h3>
+            <h3 className="text-sm md:text-base font-black text-slate-800 uppercase tracking-wider">Total Applications</h3>
             <span className="bg-blue-50 text-blue-700 px-3 py-1 rounded-md text-[10px] sm:text-xs font-bold border border-blue-100">
               {applications.length} Candidates
             </span>
@@ -229,19 +224,21 @@ function ManageApplicants() {
                     
                     <div className="flex items-start justify-between gap-3 xl:w-2/5">
                       <div className="flex items-center gap-4 flex-1 min-w-0">
-                        <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 border-white shadow-sm overflow-hidden bg-slate-100 flex items-center justify-center flex-shrink-0 relative">
-                          {avatarUrl ? (
-                            <img src={avatarUrl} alt="Candidate" className="h-full w-full object-cover z-10 relative" onError={(e) => { e.target.style.display = 'none'; }} />
-                          ) : (
-                            <span className="font-extrabold text-slate-400 text-xl z-0">{getAvatarFallback(candidateData)}</span>
+                        {/* BULLETPROOF AVATAR CONTAINER */}
+                        <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-full border-2 border-slate-100 shadow-sm overflow-hidden bg-slate-200 flex items-center justify-center flex-shrink-0 relative">
+                          <span className="font-bold text-slate-500 text-xl sm:text-2xl absolute inset-0 flex items-center justify-center z-0">
+                            {getAvatarFallback(candidateData)}
+                          </span>
+                          {avatarUrl && (
+                            <img src={avatarUrl} alt="Candidate" className="h-full w-full object-cover z-10 relative bg-white" onError={(e) => { e.target.style.display = 'none'; }} />
                           )}
                         </div>
                         <div className="min-w-0 flex-1">
-                          <p className="font-black text-slate-900 text-lg sm:text-xl leading-tight truncate">{candName}</p>
-                          <p className="text-xs sm:text-sm text-slate-500 font-medium truncate mt-0.5 mb-1.5">{candHeadline}</p>
-                          <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-blue-700 font-bold bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100 truncate max-w-full">
+                          <p className="font-black text-slate-900 text-lg sm:text-xl leading-tight break-words whitespace-normal">{candName}</p>
+                          <p className="text-xs sm:text-sm text-slate-500 font-medium break-words whitespace-normal mt-0.5 mb-1.5">{candHeadline}</p>
+                          <span className="inline-flex items-center gap-1 text-[10px] sm:text-xs text-blue-700 font-bold bg-blue-50 px-2.5 py-1 rounded-md border border-blue-100 max-w-full">
                             <svg className="w-3 h-3 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 13.255A23.931 23.931 0 0112 15c-3.183 0-6.22-.62-9-1.745M16 6V4a2 2 0 00-2-2h-4a2 2 0 00-2 2v2m4 6h.01M5 20h14a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2-2v10a2 2 0 002 2z" /></svg>
-                            <span className="truncate">Applied: {jobTitle}</span>
+                            <span className="break-words whitespace-normal">Applied: {jobTitle}</span>
                           </span>
                         </div>
                       </div>
@@ -258,11 +255,11 @@ function ManageApplicants() {
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between xl:justify-end gap-3 flex-1">
                       
                       <div className="flex items-center gap-2.5 w-full sm:w-auto bg-slate-50 p-1.5 rounded-xl border border-slate-100 flex-shrink-0">
-                        <span className="text-[10px] sm:text-xs font-bold text-slate-500 uppercase tracking-wider pl-2">Status:</span>
+                        <span className="text-[10px] sm:text-xs font-black text-slate-500 uppercase tracking-wider pl-2">Status:</span>
                         <select 
                           value={capitalize(app.status)}
                           onChange={(e) => handleUpdateStatus(app._id, e.target.value)}
-                          className={"text-xs sm:text-sm font-bold px-3 py-1.5 rounded-lg border shadow-sm cursor-pointer outline-none focus:ring-2 flex-1 sm:flex-none transition " + getStatusColor(app.status)}
+                          className={"text-sm sm:text-base font-black px-4 py-2.5 rounded-xl border shadow-sm cursor-pointer outline-none focus:ring-2 flex-1 sm:flex-none transition " + getStatusColor(app.status)}
                         >
                           <option value="Pending">Pending</option>
                           <option value="Reviewed">Reviewed</option>
@@ -276,26 +273,26 @@ function ManageApplicants() {
                         {app.coverLetter && (
                           <button 
                             onClick={() => setViewingCoverLetter({ name: candName, text: app.coverLetter })}
-                            className="w-full sm:w-auto flex items-center justify-center px-4 py-2.5 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl text-xs sm:text-sm font-black transition shadow-lg shadow-amber-500/30 border border-amber-300 gap-1.5"
+                            className="w-full sm:w-auto flex items-center justify-center px-6 py-3 bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-white rounded-xl text-sm font-black transition shadow-lg border border-amber-300 gap-1.5"
                           >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
                             Read Cover Letter
                           </button>
                         )}
 
                         <div className="flex gap-2.5 w-full sm:w-auto">
                           {candidateData ? (
-                            <Link to={"/candidate/" + candidateData._id} className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-xs sm:text-sm font-bold transition shadow-sm">
+                            <Link to={"/candidate/" + candidateData._id} className="flex-1 sm:flex-none flex items-center justify-center px-6 py-3 bg-white border border-slate-300 text-slate-700 hover:bg-slate-50 rounded-xl text-sm font-bold transition shadow-sm">
                               Profile
                             </Link>
                           ) : (
-                            <span className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 bg-slate-100 text-slate-400 rounded-xl text-xs sm:text-sm font-bold border border-slate-200">N/A</span>
+                            <span className="flex-1 sm:flex-none flex items-center justify-center px-6 py-3 bg-slate-100 text-slate-400 rounded-xl text-sm font-bold border border-slate-200">N/A</span>
                           )}
                           
                           <button 
                             onClick={() => triggerMessage(candidateData, jobTitle)}
                             disabled={!candidateData}
-                            className="flex-1 sm:flex-none flex items-center justify-center px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-300 disabled:cursor-not-allowed rounded-xl text-xs sm:text-sm font-bold transition shadow-sm gap-1.5"
+                            className="flex-1 sm:flex-none flex items-center justify-center px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white disabled:bg-slate-300 disabled:cursor-not-allowed rounded-xl text-sm font-bold transition shadow-sm gap-1.5"
                           >
                             Message
                           </button>
@@ -303,7 +300,7 @@ function ManageApplicants() {
                         
                         <button 
                           onClick={() => triggerDelete(app._id)}
-                          className="hidden xl:flex items-center justify-center text-slate-400 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 p-2.5 rounded-xl transition shadow-sm border border-slate-100 hover:border-rose-200"
+                          className="hidden xl:flex items-center justify-center text-slate-400 hover:text-rose-600 bg-slate-50 hover:bg-rose-50 p-3 sm:p-3.5 rounded-xl transition shadow-sm border border-slate-100 hover:border-rose-200"
                           title="Remove Candidate"
                         >
                           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
@@ -343,7 +340,7 @@ function ManageApplicants() {
         </div>
       )}
 
-      {/* 🚨 PREMIUM DELETE WARNING MODAL */}
+      {/* PREMIUM DELETE WARNING MODAL */}
       {deleteModalAppId && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm transition-opacity">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm border border-slate-200 flex flex-col overflow-hidden">
@@ -360,19 +357,19 @@ function ManageApplicants() {
                </button>
                <button onClick={confirmDeleteApplicant} className="flex-1 py-3 rounded-xl font-black text-white bg-rose-600 hover:bg-rose-700 transition shadow-md">
                  Remove
-                 </button>
+               </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* 🚨 PREMIUM MESSAGE CANDIDATE MODAL */}
+      {/* PREMIUM MESSAGE CANDIDATE MODAL */}
       {messageModalData && (
         <div className="fixed inset-0 z-[80] flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm transition-opacity">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg border border-slate-200 flex flex-col overflow-hidden">
             <div className="px-6 py-5 border-b border-slate-100 bg-slate-50 flex justify-between items-center">
               <div>
-                 <h3 className="text-xl font-extrabold text-slate-900">Message {messageModalData.candName}</h3>
+                 <h3 className="text-xl font-black text-slate-900">Message {messageModalData.candName}</h3>
                  <p className="text-xs text-slate-500 font-medium mt-1">Regarding the <strong className="text-slate-700">{messageModalData.jobTitle}</strong> role.</p>
               </div>
               <button onClick={() => setMessageModalData(null)} className="text-slate-400 hover:text-rose-500 transition bg-white hover:bg-rose-50 rounded-full p-2 border border-slate-200 shadow-sm">

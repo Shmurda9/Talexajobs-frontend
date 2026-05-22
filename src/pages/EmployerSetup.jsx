@@ -1,253 +1,397 @@
-import React, { useState, useEffect } from "react";
-import { useParams, useNavigate, Link } from "react-router-dom";
-import axios from "axios";
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+import toast from 'react-hot-toast';
+import { useNavigate } from 'react-router-dom';
 
-function EmployerProfile() {
-  const { id } = useParams();
+function EmployerSetup() {
   const navigate = useNavigate();
-  
-  const [profileData, setProfileData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [imgError, setImgError] = useState(false);
+  const profilePicRef = useRef(null);
+  const logoRef = useRef(null);
 
-  const token = localStorage.getItem("token");
-  let currentUserId = null;
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
 
-  if (token && token.length > 10) {
+  const [formData, setFormData] = useState({
+    fullName: '',
+    jobTitle: '',
+    location: '',
+    timezone: 'UTC',
+    bio: '',
+    portfolioUrl: '',
+    hideEmail: false,
+    
+    companyName: '',
+    companyWebsite: '',
+    industry: '',
+    companySize: '',
+    companyDescription: '',
+    companyMission: '',
+    companyCulture: ''
+  });
+
+  const [profilePic, setProfilePic] = useState(null);
+  const [profilePicPreview, setProfilePicPreview] = useState(null);
+  const [companyLogo, setCompanyLogo] = useState(null);
+  const [companyLogoPreview, setCompanyLogoPreview] = useState(null);
+
+  const token = localStorage.getItem('token');
+  let userId = null;
+
+  if (token) {
     try {
-      const decoded = JSON.parse(atob(token.split(".")[1]));
-      if (decoded.id) { currentUserId = decoded.id; }
-      else if (decoded._id) { currentUserId = decoded._id; }
+      const decoded = JSON.parse(atob(token.split('.')[1]));
+      if (decoded.id) { userId = decoded.id; }
+      else if (decoded._id) { userId = decoded._id; }
     } catch (e) {
       console.error("Token error", e);
     }
   }
 
-  let isMyProfile = false;
-  if (currentUserId === id) {
-      isMyProfile = true;
-  }
-
-  useEffect(function() {
+  useEffect(() => {
     if (!token) {
       navigate('/login');
       return;
     }
 
-    const fetchProfile = async function() {
+    const fetchCurrentData = async () => {
       try {
-        const response = await axios.get("https://talexajobs.onrender.com/api/users/" + id, {
-          headers: { token: token, Authorization: "Bearer " + token }
+        const res = await axios.get("https://talexajobs.onrender.com/api/users/" + userId, {
+          headers: { Authorization: "Bearer " + token }
         });
         
-        if (response.data && response.data.user) {
-          setProfileData(response.data.user);
-        } else if (response.data && !response.data.user) {
-           setProfileData(response.data);
+        if (res.data.success) {
+          const u = res.data.user;
+          setFormData(prev => ({
+            ...prev,
+            fullName: u.fullName || '',
+            companyName: u.employerInfo?.companyName || '',
+            jobTitle: u.employerInfo?.posterJobTitle || '',
+            industry: u.employerInfo?.industry || '',
+            companySize: u.employerInfo?.companySize || '',
+            companyMission: u.employerInfo?.companyMission || '',
+            companyCulture: u.employerInfo?.companyCulture || '',
+            hideEmail: u.hideEmail === true
+          }));
         }
       } catch (error) {
-        console.error("Error fetching profile:", error);
+        console.error("Failed to fetch user data for setup.");
       } finally {
-        setLoading(false);
+        setFetching(false);
       }
     };
 
-    fetchProfile();
-  }, [id, token, navigate]);
+    fetchCurrentData();
+  }, [token, userId, navigate]);
 
-  const handleMessageRedirect = () => {
-    navigate('/messages', { state: { prefilledContact: profileData } });
+  const handleChange = (e) => {
+    const { name, value, type, checked } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: type === 'checkbox' ? checked : value
+    }));
   };
 
-  const getAvatarSrc = () => {
-    if (profileData && profileData.profilePictureUrl) {
-      const cleanPath = profileData.profilePictureUrl.replace(/\\/g, '/');
-      if (cleanPath.startsWith('http')) return cleanPath;
-      return "https://talexajobs.onrender.com/" + cleanPath;
+  const handleProfilePicChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setProfilePic(file);
+      setProfilePicPreview(URL.createObjectURL(file));
     }
-    return null;
   };
 
-  const getAvatarFallback = () => {
-    if (profileData && profileData.fullName) return profileData.fullName.charAt(0).toUpperCase();
-    return "E";
+  const handleLogoChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCompanyLogo(file);
+      setCompanyLogoPreview(URL.createObjectURL(file));
+    }
   };
 
-  if (loading) {
+  const nextStep = () => {
+    if (step === 1) {
+      if (formData.fullName === '' || formData.jobTitle === '') {
+        toast.error("Please fill out your Name and Job Title.");
+        return;
+      }
+      setStep(2);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
+
+  const prevStep = () => {
+    setStep(1);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (formData.companyName === '') {
+      toast.error("Company Name is required.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const updateData = new FormData();
+      updateData.append('fullName', formData.fullName);
+      
+      if (profilePic) { updateData.append('profilePicture', profilePic); }
+      if (companyLogo) { updateData.append('companyLogo', companyLogo); }
+
+      const empInfo = {
+        posterJobTitle: formData.jobTitle,
+        location: formData.location,
+        timezone: formData.timezone,
+        bio: formData.bio,
+        personalWebsite: formData.portfolioUrl,
+        companyName: formData.companyName,
+        website: formData.companyWebsite,
+        industry: formData.industry,
+        companySize: formData.companySize,
+        companyDescription: formData.companyDescription,
+        companyMission: formData.companyMission,
+        companyCulture: formData.companyCulture,
+        setupCompleted: true 
+      };
+
+      updateData.append('employerInfo', JSON.stringify(empInfo));
+
+      // Main save
+      await axios.put('https://talexajobs.onrender.com/api/users/profile', updateData, {
+        headers: { token: token, Authorization: "Bearer " + token, 'Content-Type': 'multipart/form-data' }
+      });
+
+      // Safely update privacy
+      try {
+        await axios.put('https://talexajobs.onrender.com/api/users/update-privacy', 
+          { hideEmail: formData.hideEmail },
+          { headers: { token: token, Authorization: "Bearer " + token } }
+        );
+      } catch (privacyErr) {
+        console.warn("Privacy endpoint not ready, continuing anyway.");
+      }
+
+      // Fetch the fresh user data and update localStorage so the Bouncer knows you are done
+      try {
+        const freshRes = await axios.get("https://talexajobs.onrender.com/api/users/" + userId, {
+          headers: { Authorization: "Bearer " + token }
+        });
+        if (freshRes.data.success && freshRes.data.user) {
+          localStorage.setItem('user', JSON.stringify(freshRes.data.user));
+        }
+      } catch (err) {
+        console.error("Could not refresh local storage", err);
+      }
+
+      toast.success("Profile setup complete!");
+      // Force a hard reload to clear the bouncer's memory and send you to the dashboard
+      window.location.href = '/employer-dashboard'; 
+      
+    } catch (error) {
+      toast.error("Failed to save profile. Please try again.");
+      setLoading(false);
+    }
+  };
+
+  if (fetching) {
     return (
-      <div className="min-h-screen bg-[#f4f6f8] flex items-center justify-center">
-        <p className="text-slate-500 font-medium animate-pulse tracking-wide text-sm">Loading Recruiter Profile...</p>
+      <div className="min-h-screen bg-slate-50 flex items-center justify-center">
+        <p className="text-slate-500 font-bold animate-pulse text-sm">Loading setup...</p>
       </div>
     );
   }
 
-  if (!profileData) {
-    return (
-      <div className="min-h-screen bg-[#f4f6f8] flex items-center justify-center flex-col p-4">
-        <h2 className="text-xl font-bold text-slate-900 mb-2">Profile Not Found</h2>
-        <button onClick={() => navigate(-1)} className="bg-blue-600 text-white font-medium py-2 px-6 rounded-xl">Go Back</button>
-      </div>
-    );
-  }
+  const inputClass = "w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:border-transparent transition-all";
 
-  const avatarUrl = getAvatarSrc();
-  
-  // 🚨 SAFE EXTRACTION (NO || OPERATORS)
-  let fName = "Employer";
-  if (profileData.fullName) { fName = profileData.fullName; }
-  let firstName = fName.split(' ')[0];
-
-  let jTitle = "Hiring Manager";
-  let cName = "Company";
-  let loc = "";
-  let tz = "";
-  let pBio = "This recruiter hasn't added a personal bio yet.";
-  let pWebsite = "";
-  let bEmail = ""; 
-  
-  if (profileData.employerInfo) {
-      const ei = profileData.employerInfo;
-      if (ei.posterJobTitle) { jTitle = ei.posterJobTitle; }
-      if (ei.companyName) { cName = ei.companyName; }
-      
-      if (ei.location) { loc = ei.location; }
-      else if (ei.companyLocation) { loc = ei.companyLocation; }
-      else if (profileData.location) { loc = profileData.location; }
-      
-      if (ei.timezone) { tz = ei.timezone; }
-      if (ei.bio) { pBio = ei.bio; }
-      else if (profileData.bio) { pBio = profileData.bio; }
-      
-      if (ei.personalWebsite) { pWebsite = ei.personalWebsite; }
-      else if (profileData.portfolioUrl) { pWebsite = profileData.portfolioUrl; }
-      
-      if (ei.businessEmail) { bEmail = ei.businessEmail; }
-  } else {
-      if (profileData.location) { loc = profileData.location; }
-      if (profileData.bio) { pBio = profileData.bio; }
-      if (profileData.portfolioUrl) { pWebsite = profileData.portfolioUrl; }
-  }
+  const getInitial = (name) => {
+    return name && name.length > 0 ? name.charAt(0).toUpperCase() : "M";
+  };
 
   return (
-    <div className="min-h-screen bg-[#f4f6f8] py-6 sm:py-10 font-sans pb-20">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-slate-50 py-10 px-4 sm:px-6 font-sans flex justify-center">
+      <div className="w-full max-w-2xl">
         
-        <button onClick={() => navigate(-1)} className="mb-4 sm:mb-6 flex items-center text-slate-500 hover:text-slate-800 transition-colors font-bold text-xs sm:text-sm bg-white border border-slate-200 px-4 py-2.5 rounded-xl shadow-sm group">
-          <svg className="w-4 h-4 mr-2 text-slate-400 group-hover:text-slate-600 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-          Back
-        </button>
-
-        {/* PROFILE HEADER CARD */}
-        <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden mb-6 sm:mb-8 relative">
-          <div className="bg-slate-900 h-32 sm:h-40 relative">
-             <div className="absolute inset-0 opacity-10 bg-[url('https://www.transparenttextures.com/patterns/cubes.png')]"></div>
-          </div>
-          
-          <div className="px-5 sm:px-8 md:px-10 pb-6 sm:pb-8 relative">
-            <div className="flex flex-col sm:flex-row items-center sm:items-end justify-between mb-4 sm:mb-6 gap-4">
-              
-              <div className="flex flex-col sm:flex-row items-center sm:items-end gap-4 sm:gap-6 w-full sm:w-auto text-center sm:text-left">
-                <div className="-mt-14 sm:-mt-16 h-24 w-24 sm:h-32 sm:w-32 rounded-full border-4 border-white shadow-lg overflow-hidden bg-slate-100 flex items-center justify-center flex-shrink-0 z-10 relative">
-                  {avatarUrl && !imgError ? (
-                     <img src={avatarUrl} alt="Profile" className="h-full w-full object-cover" onError={() => setImgError(true)} />
-                  ) : (
-                    <span className="font-extrabold text-slate-400 text-4xl sm:text-5xl">{getAvatarFallback()}</span>
-                  )}
-                </div>
-                
-                <div className="mt-2 sm:mt-0 mb-1 sm:mb-2 flex-1 min-w-0 pt-2 sm:pt-0">
-                  <h1 className="text-2xl sm:text-3xl font-black text-slate-900 break-words">{fName}</h1>
-                  <p className="text-sm sm:text-base text-blue-600 font-extrabold mt-1 truncate">
-                    {jTitle} at {cName}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="mt-3 sm:mt-0 w-full sm:w-auto flex-shrink-0 z-10 pt-2 sm:pt-0">
-                {isMyProfile ? (
-                  <Link to="/settings" className="w-full bg-white border border-slate-200 text-slate-700 font-extrabold py-3.5 px-8 rounded-xl hover:bg-slate-50 transition shadow-sm flex items-center justify-center gap-2">
-                    Edit Settings
-                  </Link>
-                ) : (
-                  <button onClick={handleMessageRedirect} className="w-full bg-blue-600 text-white font-extrabold py-3.5 px-8 rounded-xl hover:bg-blue-700 transition shadow-md flex items-center justify-center gap-2">
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03-8-9-8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" /></svg>
-                    Message {firstName}
-                  </button>
-                )}
-              </div>
+        <div className="mb-8">
+          <div className="flex items-center justify-between relative max-w-xs mx-auto">
+            <div className="absolute left-0 top-1/2 -translate-y-1/2 w-full h-1 bg-slate-200 z-0 rounded-full"></div>
+            <div className={"absolute left-0 top-1/2 -translate-y-1/2 h-1 bg-blue-600 z-0 rounded-full transition-all duration-500 " + (step === 2 ? "w-full" : "w-1/2")}></div>
+            
+            <div className="relative z-10 flex flex-col items-center">
+              <div className="w-8 h-8 rounded-full bg-blue-600 text-white font-bold text-sm flex items-center justify-center shadow-md">1</div>
+              <span className="text-[10px] font-bold text-blue-700 mt-2 tracking-wide uppercase">The Human</span>
             </div>
-
-            <div className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 mt-6 sm:mt-8 border-t border-slate-100 pt-5 sm:pt-6">
-              
-              {/* Only show business email. NEVER show registration email. */}
-              {bEmail !== "" && (
-                <div className="flex items-center text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 w-fit">
-                    <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2-2v10a2 2 0 002 2z" /></svg>
-                  <span className="font-bold text-xs sm:text-sm">{bEmail}</span>
-                </div>
-              )}
-              
-              {loc !== "" && (
-                <div className="flex items-center text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 w-fit">
-                  <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                  <span className="font-bold text-xs sm:text-sm">{loc}</span>
-                </div>
-              )}
-
-              {tz !== "" && (
-                <div className="flex items-center text-slate-600 bg-slate-50 px-3 py-2 rounded-lg border border-slate-100 w-fit">
-                  <svg className="w-4 h-4 mr-2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <span className="font-bold text-xs sm:text-sm">{tz}</span>
-                </div>
-              )}
+            
+            <div className="relative z-10 flex flex-col items-center">
+              <div className={"w-8 h-8 rounded-full font-bold text-sm flex items-center justify-center shadow-sm transition-colors duration-500 " + (step === 2 ? "bg-blue-600 text-white shadow-md" : "bg-white text-slate-400 border border-slate-200")}>2</div>
+              <span className={"text-[10px] font-bold mt-2 tracking-wide uppercase " + (step === 2 ? "text-blue-700" : "text-slate-400")}>The Business</span>
             </div>
           </div>
         </div>
 
-        {/* MAIN CONTENT GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
-          
-          {/* LEFT COLUMN: About Recruiter */}
-          <div className="md:col-span-2 space-y-5 sm:space-y-6">
-            <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 sm:p-8">
-              <h3 className="text-sm font-black text-slate-900 uppercase tracking-widest mb-4 border-b border-slate-100 pb-3 flex items-center gap-2">
-                <svg className="w-5 h-5 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-                About {firstName}
-              </h3>
-              <p className="text-sm sm:text-base text-slate-600 leading-relaxed font-medium whitespace-pre-wrap">
-                {pBio}
-              </p>
-            </div>
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200 overflow-hidden mb-10">
+          <div className="px-8 py-8 border-b border-slate-100 text-center">
+             <h1 className="text-2xl font-black text-slate-900 tracking-tight">
+               {step === 1 ? "Complete Your Personal Profile" : "Company Details"}
+             </h1>
+             <p className="text-sm text-slate-500 font-medium mt-2">
+               {step === 1 ? "Candidates apply to people, not just companies." : "Help candidates learn about where they will work."}
+             </p>
           </div>
 
-          {/* RIGHT COLUMN: Company Call To Action */}
-          <div className="space-y-5 sm:space-y-6">
+          <div className="p-6 sm:p-8">
             
-            <div className="bg-slate-900 rounded-2xl p-6 sm:p-8 flex flex-col items-center text-center shadow-lg relative overflow-hidden">
-               <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/20 rounded-full blur-2xl"></div>
-               
-               <div className="h-16 w-16 bg-white rounded-xl shadow-md flex items-center justify-center mb-4 relative z-10">
-                  <span className="text-2xl font-black text-slate-900">{cName.charAt(0).toUpperCase()}</span>
-               </div>
-               
-               <h4 className="font-black text-white text-lg relative z-10 mb-2">{cName}</h4>
-               <p className="text-slate-400 text-xs font-medium mb-6 relative z-10">View company mission, culture, and active job listings.</p>
-               
-               {/* 🚨 THIS BUTTON TAKES THEM TO THE COMPANY PAGE */}
-               <Link to={"/employer/" + id} className="relative z-10 w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-500 transition shadow-md flex items-center justify-center gap-2 text-sm">
-                 View Company Profile
-                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
-               </Link>
-               </div>
-
-            {pWebsite !== "" && (
-              <div className="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 sm:p-6">
-                <a href={pWebsite.startsWith('http') ? pWebsite : "https://" + pWebsite} target="_blank" rel="noopener noreferrer" className="w-full flex items-center justify-center gap-2 bg-slate-50 hover:bg-slate-100 text-slate-700 border border-slate-200 px-4 py-3 rounded-xl font-bold transition shadow-sm text-sm">
-                  <svg className="w-4 h-4 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
-                  Personal Portfolio
-                </a>
+            {/* ================= STEP 1: PERSONAL DETAILS ================= */}
+            <div className={step === 1 ? "block" : "hidden"}>
+              
+              <div className="flex flex-col items-center mb-8">
+                <div className="relative inline-block">
+                  <div className="h-24 w-24 rounded-full border-4 border-slate-50 bg-slate-100 flex items-center justify-center shadow-md overflow-hidden">
+                    {profilePicPreview ? (
+                      <img src={profilePicPreview} alt="Preview" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-3xl font-black text-slate-300">{getInitial(formData.fullName)}</span>
+                    )}
+                  </div>
+                  
+                  <button 
+                    type="button"
+                    onClick={() => profilePicRef.current.click()}
+                    className="absolute bottom-0 right-0 bg-slate-900 p-2 rounded-full border-2 border-white shadow-md hover:bg-slate-800 transition transform hover:scale-105 cursor-pointer"
+                  >
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  </button>
+                </div>
+                <input type="file" accept="image/*" onChange={handleProfilePicChange} ref={profilePicRef} className="hidden" />
               </div>
-            )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Full Name <span className="text-rose-500">*</span></label>
+                  <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Job Title <span className="text-rose-500">*</span></label>
+                  <input type="text" name="jobTitle" value={formData.jobTitle} onChange={handleChange} className={inputClass} />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Location</label>
+                  <input type="text" name="location" value={formData.location} onChange={handleChange} className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Primary Timezone</label>
+                  <select name="timezone" value={formData.timezone} onChange={handleChange} className={inputClass}>
+                    <option value="UTC">UTC (GMT)</option>
+                    <option value="EST">EST (New York)</option>
+                    <option value="CST">CST (Chicago)</option>
+                    <option value="PST">PST (Los Angeles)</option>
+                    <option value="GMT">GMT (London)</option>
+                    <option value="CET">CET (Berlin/Paris)</option>
+                    <option value="IST">IST (India)</option>
+                    <option value="AEST">AEST (Sydney)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mb-5">
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Professional Bio</label>
+                <textarea name="bio" rows="3" value={formData.bio} onChange={handleChange} className={inputClass + " resize-none"}></textarea>
+              </div>
+
+              <div className="mb-8">
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Portfolio / Website Link</label>
+                <input type="url" name="portfolioUrl" value={formData.portfolioUrl} onChange={handleChange} className={inputClass} placeholder="https://" />
+              </div>
+
+              <button type="button" onClick={nextStep} className="w-full bg-slate-900 text-white text-sm font-bold py-3.5 rounded-xl hover:bg-slate-800 transition shadow-md flex justify-center items-center gap-2">
+                Continue to Company Details
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" /></svg>
+              </button>
+            </div>
+
+            {/* ================= STEP 2: COMPANY DETAILS ================= */}
+            <div className={step === 2 ? "block" : "hidden"}>
+              
+              <div className="flex flex-col items-center mb-8">
+                <div className="relative inline-block">
+                  <div className="h-24 w-24 rounded-2xl border-4 border-slate-50 bg-slate-100 flex items-center justify-center shadow-md overflow-hidden">
+                    {companyLogoPreview ? (
+                      <img src={companyLogoPreview} alt="Logo" className="h-full w-full object-cover" />
+                    ) : (
+                      <span className="text-3xl font-black text-slate-300">{getInitial(formData.companyName)}</span>
+                    )}
+                  </div>
+                  
+                  <button 
+                    type="button"
+                    onClick={() => logoRef.current.click()}
+                    className="absolute -bottom-2 -right-2 bg-slate-900 p-2 rounded-full border-2 border-white shadow-md hover:bg-slate-800 transition transform hover:scale-105 cursor-pointer"
+                  >
+                    <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                  </button>
+                </div>
+                <input type="file" accept="image/*" onChange={handleLogoChange} ref={logoRef} className="hidden" />
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Company Name <span className="text-rose-500">*</span></label>
+                  <input type="text" name="companyName" value={formData.companyName} onChange={handleChange} className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Company Website</label>
+                  <input type="url" name="companyWebsite" value={formData.companyWebsite} onChange={handleChange} className={inputClass} placeholder="https://" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5 mb-5">
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Industry</label>
+                  <input type="text" name="industry" value={formData.industry} onChange={handleChange} className={inputClass} />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Team Size</label>
+                  <select name="companySize" value={formData.companySize} onChange={handleChange} className={inputClass}>
+                    <option value="">Select size...</option>
+                    <option value="1-10">1-10 Employees</option>
+                    <option value="11-50">11-50 Employees</option>
+                    <option value="51-200">51-200 Employees</option>
+                    <option value="201-500">201-500 Employees</option>
+                    <option value="501-1000">501-1000 Employees</option>
+                    <option value="1000+">1000+ Employees</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="mb-5">
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Company Overview</label>
+                <textarea name="companyDescription" rows="3" value={formData.companyDescription} onChange={handleChange} className={inputClass + " resize-none"}></textarea>
+              </div>
+
+              <div className="mb-5">
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Company Mission</label>
+                <textarea name="companyMission" rows="2" value={formData.companyMission} onChange={handleChange} className={inputClass + " resize-none"}></textarea>
+              </div>
+
+              <div className="mb-8">
+                <label className="block text-xs font-bold text-slate-700 mb-2 uppercase tracking-wider">Culture & Values</label>
+                <textarea name="companyCulture" rows="2" value={formData.companyCulture} onChange={handleChange} className={inputClass + " resize-none"}></textarea>
+              </div>
+
+              <div className="flex gap-3 border-t border-slate-100 pt-6">
+                <button type="button" onClick={prevStep} className="w-1/3 bg-white text-slate-700 border border-slate-300 text-sm font-bold py-3.5 rounded-xl hover:bg-slate-50 transition shadow-sm">
+                  Back
+                </button>
+                <button type="button" onClick={handleSubmit} disabled={loading} className={"w-2/3 text-sm font-bold py-3.5 rounded-xl transition shadow-md " + (loading ? "bg-slate-400 text-white cursor-not-allowed" : "bg-slate-900 hover:bg-slate-800 text-white")}>
+                  {loading ? "Saving Profile..." : "Finish Setup"}
+                </button>
+              </div>
+
+            </div>
 
           </div>
         </div>
@@ -256,4 +400,4 @@ function EmployerProfile() {
   );
 }
 
-export default EmployerProfile;
+export default EmployerSetup;

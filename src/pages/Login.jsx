@@ -33,30 +33,39 @@ function Login() {
         const user = response.data.user;
         localStorage.setItem("user", JSON.stringify(user));
 
-        toast.success("Welcome back, " + user.fullName.split(" ")[0] + "!");
+        toast.success("Welcome back, " + (user.fullName ? user.fullName.split(" ")[0] : "User") + "!");
 
-        if (user.role === "admin") {
+        const roleStr = user.role ? String(user.role).toLowerCase() : "";
+
+        if (roleStr === "admin") {
           navigate("/admin");
           return;
         }
         
         let isProfileComplete = false;
-        if (user.role === "jobSeeker" && user.candidateInfo && user.candidateInfo.headline) {
-          isProfileComplete = true; 
-        } else if (user.role === "employer" && user.employerInfo && user.employerInfo.companyDescription) {
-          isProfileComplete = true; 
+        
+        // 🚨 THE FIX: Use the exact flags your Setup files create!
+        if (roleStr === "jobseeker") {
+          if (user.candidateInfo && user.candidateInfo.headline) {
+            isProfileComplete = true; 
+          }
+        } else if (roleStr === "employer") {
+          // This perfectly matches the `setupCompleted: true` you set in EmployerSetup.jsx
+          if (user.employerInfo && user.employerInfo.setupCompleted === true) {
+            isProfileComplete = true; 
+          }
         }
 
-        // Instantly route based on profile status
+        // Route based on verified profile status
         if (isProfileComplete) {
-          if (user.role === "employer") {
+          if (roleStr === "employer") {
             navigate("/employer-dashboard");
           } else {
             navigate("/dashboard");
           }
         } else {
-          // If setup is missing, route them to their specific setup flows
-          if (user.role === "employer") {
+          // Force new/incomplete users to their specific setup flow
+          if (roleStr === "employer") {
              navigate("/employer-setup");
           } else {
              navigate("/profile-setup");
@@ -88,7 +97,6 @@ function Login() {
       <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:w-[45%] xl:w-[40%] bg-white lg:px-20 xl:px-24 shadow-2xl z-10 relative">
         <div className="mx-auto w-full max-w-sm lg:w-96">
           
-          {/* Brand Logo - Updated to match Navbar */}
           <Link to="/" className="flex items-center gap-2 group mb-12">
             <img 
               src="/logo.png" 
@@ -105,9 +113,6 @@ function Login() {
             <h2 className="text-3xl font-black text-slate-900 tracking-tight">
               Welcome back
             </h2>
-            <p className="mt-2 text-sm font-medium text-slate-500">
-              Enter your credentials to access your workspace.
-            </p>
           </div>
 
           <div className="mt-8">
@@ -125,8 +130,7 @@ function Login() {
                     required 
                     value={formData.email} 
                     onChange={handleChange} 
-                    className="appearance-none block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-sm" 
-                    placeholder="you@company.com"
+                    className="appearance-none block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-sm" 
                   />
                 </div>
               </div>
@@ -143,8 +147,7 @@ function Login() {
                     required 
                     value={formData.password} 
                     onChange={handleChange} 
-                    className="appearance-none block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-sm"
-                    placeholder="••••••••" 
+                    className="appearance-none block w-full pl-11 pr-4 py-3.5 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:bg-white transition-all shadow-sm"
                   />
                 </div>
               </div>
@@ -202,10 +205,8 @@ function Login() {
           src="https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
           alt="Modern Architecture"
         />
-        {/* Subtle gradient overlay to make it look expensive */}
         <div className="absolute inset-0 bg-gradient-to-tr from-blue-900/60 via-slate-900/20 to-transparent mix-blend-multiply"></div>
         
-        {/* Optional Premium Text overlay on the image */}
         <div className="absolute bottom-12 left-12 right-12 text-white">
           <h3 className="text-3xl font-black mb-3">Your Next Great Hire is Waiting.</h3>
           <p className="text-lg font-medium text-blue-100 max-w-xl">Join the world's most exclusive network of top-tier talent and industry-leading employers.</p>

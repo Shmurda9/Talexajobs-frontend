@@ -326,7 +326,7 @@ function AdminDashboard() {
                       
                       {emp.employerInfo && emp.employerInfo.website && (
                         <div className="mt-1">
-                           <a href={emp.employerInfo.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-800 transition font-bold truncate">
+                           <a href={emp.employerInfo.website} target="_blank" rel="noreferrer" className="inline-flex items-center gap-1.5 text-sm text-indigo-600 hover:text-indigo-800 transition font-bold truncate max-w-full">
                              <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" /></svg>
                              {emp.employerInfo.website}
                            </a>
@@ -392,7 +392,8 @@ function AdminDashboard() {
                 {pendingJobs.map((job) => (
                   <div key={job._id} className="border border-amber-200 bg-amber-50 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-extrabold text-slate-900 text-lg leading-tight truncate">{job.title}</h3>
+                      {/* FIX 1: Removed truncate, added break-words whitespace-normal so long titles wrap properly */}
+                      <h3 className="font-extrabold text-slate-900 text-lg leading-tight break-words whitespace-normal">{job.title}</h3>
                       <p className="text-sm text-slate-500 font-medium mt-1 truncate">{getCompanyName(job.user)} - {job.location}</p>
                       <div className="flex gap-2 mt-2">
                         <span className="bg-white text-slate-600 border border-slate-200 px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider">{job.category}</span>
@@ -417,7 +418,8 @@ function AdminDashboard() {
                   <div key={job._id} className="border border-slate-200 rounded-xl p-4 sm:p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:shadow-md transition">
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
-                        <h3 className="font-extrabold text-slate-900 text-lg leading-tight truncate">{job.title}</h3>
+                        {/* FIX 2: Removed truncate, added break-words whitespace-normal so long titles wrap properly */}
+                        <h3 className="font-extrabold text-slate-900 text-lg leading-tight break-words whitespace-normal">{job.title}</h3>
                         <span className="bg-blue-50 text-blue-700 border border-blue-200 px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider flex-shrink-0">Live</span>
                       </div>
                       <p className="text-sm text-slate-500 font-medium truncate">{getCompanyName(job.user)}</p>
@@ -437,7 +439,7 @@ function AdminDashboard() {
         )}
         </div>
 
-      {/* 🚨 UPDATED MODAL: Now shows the new Profile Bio and Portfolio fields! */}
+      {/* ð¨ UPDATED MODAL: Now shows the new Profile Bio and Portfolio fields! */}
       {selectedEmployer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900 bg-opacity-60 overflow-y-auto">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg overflow-hidden border border-slate-200 flex flex-col">
@@ -501,7 +503,8 @@ function AdminDashboard() {
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-slate-200 flex flex-col">
             <div className="sticky top-0 bg-white px-6 py-4 border-b border-slate-100 flex justify-between items-start sm:items-center z-10 gap-4">
               <div className="min-w-0 flex-1">
-                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 truncate">{selectedJob.title}</h3>
+                {/* FIX 3: Modal Job Title removed truncate */}
+                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 break-words whitespace-normal">{selectedJob.title}</h3>
                 <p className="text-sm text-slate-500 font-medium truncate">{getCompanyName(selectedJob.user)}</p>
               </div>
               <button onClick={() => setSelectedJob(null)} className="text-slate-400 hover:text-slate-700 transition bg-slate-50 hover:bg-slate-100 border border-slate-200 rounded-lg p-2 flex-shrink-0">
@@ -517,7 +520,8 @@ function AdminDashboard() {
                     External Routing Enabled
                   </h4>
                   <p className="text-blue-700 text-sm font-medium">This employer is redirecting candidates to apply outside of TalexaJobs:</p>
-                  <a href={selectedJob.applicationLink} target="_blank" rel="noreferrer" className="text-blue-600 font-bold text-sm hover:underline break-all mt-1">
+                  {/* FIX 4: URL now uses 'block truncate w-full' so it shrinks with ... and doesn't break the card width */}
+                  <a href={selectedJob.applicationLink} target="_blank" rel="noreferrer" className="text-blue-600 font-bold text-sm hover:underline block truncate w-full mt-1">
                     {selectedJob.applicationLink}
                   </a>
                   </div>

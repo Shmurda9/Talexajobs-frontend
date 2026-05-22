@@ -24,7 +24,6 @@ function JobBoard() {
   const [coverLetterText, setCoverLetterText] = useState("");
   const [applyingJobId, setApplyingJobId] = useState(null);
 
-  // 🚨 NEW STATE FOR THE SUGGESTED JOBS MODAL
   const [showSuggestedModal, setShowSuggestedModal] = useState(false);
 
   const token = localStorage.getItem("token");
@@ -266,7 +265,6 @@ function JobBoard() {
 
   const recommendedJobs = getRecommendedJobs();
 
-  // 🚨 THE ONE-TIME SESSION POP-UP LOGIC
   useEffect(() => {
     if (recommendedJobs.length > 0) {
       const hasSeenPopup = sessionStorage.getItem('hasSeenSuggestedJobs');
@@ -362,13 +360,22 @@ function JobBoard() {
         
         <div className="flex justify-between items-start gap-4 mb-4">
           <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
-            <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-xl border border-slate-100 bg-slate-50 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm">
-              {logoUrl ? (
-                <img src={logoUrl} alt="Logo" className="h-full w-full object-cover" />
-              ) : (
-                <span className="font-extrabold text-slate-400 text-xl sm:text-2xl">{getAvatarLetter(job.user)}</span>
+            
+            {/* 🚨 THE ONLY CHANGED BLOCK: Your requested logo fallback */}
+            <div className="h-12 w-12 sm:h-14 sm:w-14 rounded-xl border border-slate-100 bg-slate-200 flex items-center justify-center flex-shrink-0 overflow-hidden shadow-sm relative">
+              <span className="font-bold text-slate-500 text-xl sm:text-2xl absolute inset-0 flex items-center justify-center">
+                {getAvatarLetter(job.user)}
+              </span>
+              {logoUrl && (
+                <img 
+                  src={logoUrl} 
+                  alt="Logo" 
+                  className="h-full w-full object-cover relative z-10 bg-white" 
+                  onError={(e) => { e.target.style.display = 'none'; }} 
+                />
               )}
             </div>
+
             <div className="flex-1 min-w-0">
               <h3 className="text-lg sm:text-xl font-extrabold text-slate-900 leading-snug line-clamp-2">{job.title}</h3>
               <Link to={job.user && job.user._id ? "/employer/" + job.user._id : "#"} className="text-blue-600 hover:text-blue-800 transition font-bold text-xs sm:text-sm mt-1 truncate inline-block max-w-full">
