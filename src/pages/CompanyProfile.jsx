@@ -82,7 +82,7 @@ function CompanyProfile() {
       
       {/* HEADER HERO SECTION */}
       <div className="relative h-40 sm:h-64 bg-slate-900 overflow-hidden">
-       // Find this in your CompanyProfile.jsx:
+      
 <img 
   src={logoUrl} 
   alt={companyName} 
